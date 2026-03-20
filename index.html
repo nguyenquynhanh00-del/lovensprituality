@@ -2728,18 +2728,12 @@ let selectedDrinkIdx = 0;
 const DRINKS = [
   { icon: '🍵', name: 'Trà tịnh tâm', color: '#c9a84c' },
   { icon: '🍋', name: 'Trà chanh', color: '#f0d060' },
-  { icon: '💧', name: 'Nước lọc
-thanh vị', color: '#a0c8e8' },
-  { icon: '🍵', name: 'Matcha
-latte', color: '#7ab87a' },
-  { icon: '🥤', name: 'Nước ép
-trái cây', color: '#e88060' },
-  { icon: '☕', name: 'Cà phê
-sữa', color: '#8b5e3c' },
-  { icon: '🧃', name: 'Trà sữa
-trân châu', color: '#d4a0c8' },
-  { icon: '🫖', name: 'Trà hoa
-cúc', color: '#e8d880' },
+  { icon: '💧', name: 'Nước lọc thanh vị', color: '#a0c8e8' },
+  { icon: '🍵', name: 'Matcha latte', color: '#7ab87a' },
+  { icon: '🥤', name: 'Nước ép trái cây', color: '#e88060' },
+  { icon: '☕', name: 'Cà phê sữa', color: '#8b5e3c' },
+  { icon: '🧃', name: 'Trà sữa trân châu', color: '#d4a0c8' },
+  { icon: '🫖', name: 'Trà hoa cúc', color: '#e8d880' },
   { icon: '✨', name: 'Tự chọn', color: '#c9a84c', custom: true },
 ];
 
@@ -2774,8 +2768,7 @@ function initDrinkPicker() {
 
   // Set default drink name
   const nameInput = document.getElementById('drink-name-input');
-  if (nameInput) nameInput.value = DRINKS[0].name.replace('
-', ' ');
+  if (nameInput) nameInput.value = DRINKS[0].name.replace(/\n/g, ' ');
 
   // Live preview update
   const nameEl = document.getElementById('drink-name-input');
@@ -2792,8 +2785,7 @@ function selectDrink(idx) {
   });
   const drink = DRINKS[idx];
   const nameInput = document.getElementById('drink-name-input');
-  if (nameInput && !drink.custom) nameInput.value = drink.name.replace('
-', ' ');
+  if (nameInput && !drink.custom) nameInput.value = drink.name.replace(/\n/g, ' ');
   updateTeaPreview();
 }
 
@@ -2813,8 +2805,7 @@ function updateTeaPreview() {
   const nameEl = document.getElementById('tea-preview-name');
   const msgEl = document.getElementById('tea-preview-msg');
   if (iconEl) iconEl.textContent = drink.icon;
-  if (nameEl) nameEl.textContent = nameInput?.value || drink.name.replace('
-', ' ');
+  if (nameEl) nameEl.textContent = nameInput?.value || drink.name.replace(/\n/g, ' ');
   if (msgEl) msgEl.textContent = msgInput?.value || PRESET_MESSAGES[0];
 }
 
@@ -2822,8 +2813,7 @@ async function offerTea() {
   if (teaCooldown) { showToast('🍵 Vừa dâng rồi — chờ người ấy nhận nhé!'); return; }
 
   const drink = DRINKS[selectedDrinkIdx];
-  const drinkName = document.getElementById('drink-name-input')?.value.trim() || drink.name.replace('
-', ' ');
+  const drinkName = document.getElementById('drink-name-input')?.value.trim() || drink.name.replace(/\n/g, ' ');
   const customMsg = document.getElementById('tea-msg-input')?.value.trim() || PRESET_MESSAGES[0];
   const myName = state.userProfile?.name || state.currentUser?.displayName || 'Người ấy';
 
