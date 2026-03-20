@@ -574,6 +574,28 @@
   .tea-cup:active { transform: scale(0.92); }
   .tea-cup.offered { filter: drop-shadow(0 0 16px rgba(201,168,76,0.8)); }
 
+  /* Drink picker */
+  .drink-item {
+    background: rgba(201,168,76,0.06); border: 1.5px solid rgba(201,168,76,0.15);
+    border-radius: 12px; padding: 10px 6px; cursor: pointer;
+    text-align: center; transition: all 0.2s;
+  }
+  .drink-item:hover { background: rgba(201,168,76,0.12); }
+  .drink-item.selected { border-color: var(--gold); background: rgba(201,168,76,0.18); }
+  .drink-item .d-icon { font-size: 26px; display: block; margin-bottom: 4px; }
+  .drink-item .d-name { font-size: 10px; color: rgba(201,168,76,0.7); line-height: 1.3; }
+  .drink-item .d-custom { font-size: 9px; color: rgba(201,168,76,0.4); margin-top: 1px; }
+
+  /* Preset message chips */
+  .preset-chip {
+    background: rgba(201,168,76,0.08); border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 20px; padding: 5px 10px; font-size: 11px;
+    color: rgba(201,168,76,0.7); cursor: pointer; transition: all 0.2s;
+    font-family: 'Cormorant Garamond', serif;
+  }
+  .preset-chip:hover { background: rgba(201,168,76,0.18); color: var(--gold); border-color: var(--gold); }
+  .preset-chip.selected { background: rgba(201,168,76,0.2); color: var(--gold); border-color: var(--gold); }
+
   /* Wish wall */
   .wish-wall { min-height: 120px; position: relative; }
   .wish-note {
@@ -755,7 +777,7 @@
 
     <div style="padding:20px 20px 0;">
     <div class="page-header" style="padding-top:10px;">
-      <div class="page-sub">CHỌN VỊ THẦN · DÂNG HƯƠNG · CẦU NGUYỆN</div>
+      <div class="page-sub">BÀN THỜ CHUNG · DÂNG HƯƠNG · CẦU NGUYỆN CÙNG NHAU</div>
     </div>
 
     <div class="deity-grid">
@@ -817,7 +839,7 @@
     </div>
 
     <div style="margin-bottom:16px;">
-      <div style="font-size:10px;color:var(--gold);letter-spacing:0.2em;margin-bottom:8px;">✦ LỜI CẦU NGUYỆN CỦA HAI TA ✦</div>
+      <div style="font-size:10px;color:var(--gold);letter-spacing:0.2em;margin-bottom:8px;">✦ BÀN THỜ CHUNG — CẢ HAI ĐỀU THẤY ✦</div>
       <textarea class="prayer-input" id="prayer-text" placeholder="Kính bạch... Con xin cầu nguyện cho hai chúng con..."></textarea>
       <button class="btn-gold" onclick="submitPrayer()">🙏 Dâng Lời Nguyện Cầu</button>
     </div>
@@ -1035,30 +1057,39 @@
 
     <!-- TEA RITUAL -->
     <div class="sanctuary-section">
-      <div class="sanctuary-title">🍵 Dâng Trà Tịnh Tâm</div>
-      <div class="sanctuary-sub">KHI MỘT NGƯỜI DÂNG TRÀ — NGƯỜI KIA SẼ ĐƯỢC BÁO</div>
-      <div style="text-align:center;">
-        <svg class="tea-cup" id="tea-cup-svg" viewBox="0 0 70 70" onclick="offerTea()" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <radialGradient id="teaGrad" cx="50%" cy="60%" r="50%"><stop offset="0%" stop-color="#c9a84c"/><stop offset="100%" stop-color="#6b3a2a"/></radialGradient>
-          </defs>
-          <!-- Steam -->
-          <path d="M28 18 Q26 10 28 5 Q30 10 28 18" stroke="rgba(201,168,76,0.5)" stroke-width="1.5" fill="none" stroke-linecap="round" class="steam-path"/>
-          <path d="M35 16 Q33 8 35 3 Q37 8 35 16" stroke="rgba(201,168,76,0.4)" stroke-width="1.5" fill="none" stroke-linecap="round" class="steam-path"/>
-          <path d="M42 18 Q40 10 42 5 Q44 10 42 18" stroke="rgba(201,168,76,0.5)" stroke-width="1.5" fill="none" stroke-linecap="round" class="steam-path"/>
-          <!-- Cup -->
-          <path d="M12 28 Q10 55 14 58 L56 58 Q60 55 58 28Z" fill="url(#teaGrad)"/>
-          <path d="M12 28 L58 28" stroke="rgba(201,168,76,0.6)" stroke-width="1.5"/>
-          <!-- Tea surface -->
-          <ellipse cx="35" cy="32" rx="20" ry="5" fill="rgba(101,58,30,0.8)"/>
-          <!-- Handle -->
-          <path d="M58 34 Q68 34 68 44 Q68 54 58 52" stroke="rgba(201,168,76,0.7)" stroke-width="3" fill="none" stroke-linecap="round"/>
-          <!-- Saucer -->
-          <ellipse cx="35" cy="60" rx="28" ry="6" fill="rgba(201,168,76,0.4)"/>
-        </svg>
-        <div id="tea-status" style="font-size:12px;color:rgba(201,168,76,0.7);margin-bottom:12px;">Nhấn vào tách trà để dâng 🙏</div>
-        <button class="btn-gold" onclick="offerTea()">🍵 Dâng Trà Cho Người Ấy</button>
+      <div class="sanctuary-title">🍵 Dâng Đồ Uống Tịnh Tâm</div>
+      <div class="sanctuary-sub">CHỌN ĐỒ UỐNG · VIẾT LỜI CHÚC · GỬI ĐẾN NGƯỜI ẤY</div>
+
+      <!-- Drink picker grid -->
+      <div id="drink-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;"></div>
+
+      <!-- Custom drink name -->
+      <div style="margin-bottom:12px;">
+        <div style="font-size:10px;color:rgba(201,168,76,0.5);letter-spacing:0.15em;margin-bottom:5px;">TÊN ĐỒ UỐNG (có thể đổi)</div>
+        <input id="drink-name-input" type="text" placeholder="Tên đồ uống..."
+          style="width:100%;background:rgba(201,168,76,0.07);border:1px solid rgba(201,168,76,0.2);border-radius:10px;padding:10px 14px;color:var(--paper);font-family:'Cormorant Garamond',serif;font-size:15px;outline:none;">
       </div>
+
+      <!-- Custom message -->
+      <div style="margin-bottom:14px;">
+        <div style="font-size:10px;color:rgba(201,168,76,0.5);letter-spacing:0.15em;margin-bottom:5px;">LỜI CHÚC GỬI KÈM</div>
+        <!-- Preset messages -->
+        <div id="preset-msgs" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;"></div>
+        <textarea id="tea-msg-input" placeholder="Hoặc viết lời chúc của riêng bạn..."
+          style="width:100%;background:rgba(201,168,76,0.07);border:1px solid rgba(201,168,76,0.2);border-radius:10px;padding:10px 14px;color:var(--paper);font-family:'Cormorant Garamond',serif;font-size:14px;outline:none;resize:none;min-height:64px;line-height:1.5;"></textarea>
+      </div>
+
+      <!-- Preview + Send -->
+      <div id="tea-preview" style="background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.15);border-radius:12px;padding:12px;margin-bottom:12px;display:flex;align-items:center;gap:12px;">
+        <div id="tea-preview-icon" style="font-size:36px;flex-shrink:0;">🍵</div>
+        <div>
+          <div id="tea-preview-name" style="font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--gold);">Trà tịnh tâm</div>
+          <div id="tea-preview-msg" style="font-size:13px;color:rgba(240,208,128,0.7);margin-top:2px;font-style:italic;">Hãy ngồi xuống, thở chậm và cảm nhận nhé 🌸</div>
+        </div>
+      </div>
+
+      <div id="tea-status" style="font-size:12px;color:rgba(201,168,76,0.7);text-align:center;margin-bottom:10px;min-height:18px;"></div>
+      <button class="btn-gold" id="tea-send-btn" onclick="offerTea()">🍵 Dâng Cho Người Ấy</button>
     </div>
 
     <!-- WISH WALL -->
@@ -1593,47 +1624,98 @@ async function submitPrayer() {
   const text = document.getElementById('prayer-text').value.trim();
   const deity = document.querySelector('.deity-card.selected')?.dataset.deity || 'phat';
   if (!text) { showToast('Hãy nhập lời cầu nguyện'); return; }
-  const entry = { text, deity, time: new Date().toLocaleDateString('vi-VN'), id: Date.now() };
+
+  const myName = state.userProfile?.name || state.currentUser?.displayName || 'Người dâng hương';
+  const entry = {
+    text, deity,
+    time: new Date().toLocaleDateString('vi-VN'),
+    id: Date.now(),
+    author: myName,
+    uid: state.currentUser?.uid || 'guest'
+  };
+
+  // Save to local state
   state.prayers.unshift(entry);
   localStorage.setItem('prayers', JSON.stringify(state.prayers.slice(0, 50)));
   document.getElementById('prayer-text').value = '';
+
+  // Save to Firebase shared altar so partner sees it too
+  if (firebaseDb && state.currentUser && state.partnerId) {
+    const coupleId = [state.currentUser.uid, state.partnerId].sort().join('_');
+    firebaseDb.ref('prayers/' + coupleId).push(entry);
+  }
+
   renderPrayers();
   showToast('🙏 Lời cầu nguyện đã được dâng lên!');
 
-  // Generate a care nudge for partner (without revealing prayer content)
+  // Generate care nudge for partner
   if (state.currentUser && state.partnerId) {
     generateCareNudge(text, deity);
   }
+}
+
+// Listen for partner's prayers in realtime
+function listenForSharedPrayers() {
+  if (!firebaseDb || !state.currentUser || !state.partnerId) return;
+  const coupleId = [state.currentUser.uid, state.partnerId].sort().join('_');
+  firebaseDb.ref('prayers/' + coupleId).on('value', snap => {
+    const data = snap.val();
+    if (!data) return;
+    // Merge Firebase prayers with local, deduplicate by id
+    const fbPrayers = Object.values(data).sort((a, b) => b.id - a.id);
+    const ids = new Set(state.prayers.map(p => p.id));
+    fbPrayers.forEach(p => {
+      if (!ids.has(p.id)) { state.prayers.unshift(p); ids.add(p.id); }
+    });
+    state.prayers.sort((a, b) => b.id - a.id);
+    renderPrayers();
+  });
 }
 
 async function generateCareNudge(prayerText, deity) {
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 150,
-        system: `Bạn là trợ lý tình yêu. Dựa trên lời cầu nguyện (mà chỉ bạn biết, không được tiết lộ), hãy tạo ra 1 gợi ý hành động quan tâm NGẮN (tối đa 2 câu) để người yêu của người cầu nguyện có thể làm để thể hiện sự quan tâm. Không nhắc đến nội dung cầu nguyện. Bắt đầu bằng emoji phù hợp. Chỉ trả về gợi ý, không có gì khác.`,
-        messages: [{ role: 'user', content: `Lời cầu nguyện (bí mật): "${prayerText}"
-Vị thần: ${DEITY_NAMES[deity]}
-Tạo gợi ý quan tâm cho người yêu:` }]
+        model: 'claude-sonnet-4-6',
+        max_tokens: 200,
+        system: `Bạn là người bạn tâm linh thấu hiểu. Dựa trên lời cầu nguyện bí mật của một người, hãy tạo ra một thông điệp quan tâm GỬI CHO NGƯỜI YÊU của họ. Thông điệp phải:
+- TUYỆT ĐỐI không tiết lộ nội dung cầu nguyện
+- Gợi ý MỘT hành động cụ thể, nhỏ và dễ làm ngay hôm nay
+- Ấm áp, chân thành, không sáo rỗng
+- Bắt đầu bằng emoji phù hợp
+- Tối đa 3 câu
+- Viết bằng tiếng Việt
+Ví dụ tốt: "💙 Người ấy đang có điều gì đó trong lòng hôm nay. Hãy chủ động hỏi thăm họ một câu — đôi khi chỉ cần biết có người quan tâm là đủ ấm lòng rồi."
+Chỉ trả về thông điệp, không giải thích gì thêm.`,
+        messages: [{ role: 'user', content: `Cầu nguyện với ${DEITY_NAMES[deity]}: "${prayerText}"
+Viết thông điệp quan tâm cho người yêu của họ:` }]
       })
     });
     const data = await res.json();
-    const nudge = data.content?.[0]?.text || '💙 Người ấy đang cần bạn hôm nay — hãy nhắn một tin nhắn thật ấm áp nhé.';
+    const nudge = (data.content && data.content[0] && data.content[0].text)
+      ? data.content[0].text
+      : '💙 Người ấy đang có điều gì đó trên lòng hôm nay — hãy nhắn cho họ một câu hỏi thăm thật chân thành nhé.';
     
     // Save notification to Firebase for partner
     if (window.firebaseDb && state.partnerId) {
-      const notifRef = window.firebaseDb.ref(`notifications/${state.partnerId}`);
+      const myName = state.userProfile?.name || 'Người ấy';
+      const notifRef = window.firebaseDb.ref('notifications/' + state.partnerId);
       notifRef.push({
         from: state.currentUser.uid,
-        fromName: state.userProfile?.name || 'Người ấy',
+        fromName: myName,
         message: nudge,
         type: 'care_nudge',
+        deity: DEITY_NAMES[deity] || deity,
         timestamp: Date.now(),
         read: false
       });
+      // Also show toast to sender
+      showToast('💌 Đã gửi gợi ý quan tâm đến ' + (state.partnerProfile?.name || 'người ấy') + '!');
     }
   } catch(e) {
     console.log('Care nudge generation failed:', e);
@@ -2064,12 +2146,28 @@ const DEITY_DISPLAY = {
 };
 function renderPrayers() {
   const list = document.getElementById('prayer-list');
-  list.innerHTML = state.prayers.slice(0, 10).map(p => `
-    <div class="diary-entry">
-      <div class="diary-date">${p.time} · Dâng lên ${DEITY_NAMES[p.deity] || p.deity}</div>
+  if (!state.prayers.length) {
+    list.innerHTML = '<div style="text-align:center;color:rgba(201,168,76,0.3);font-size:13px;padding:16px 0;">Chưa có lời cầu nguyện nào 🙏</div>';
+    return;
+  }
+  const myUid = state.currentUser?.uid || 'guest';
+  list.innerHTML = state.prayers.slice(0, 20).map(p => {
+    const isMe = !p.uid || p.uid === myUid;
+    const borderColor = isMe ? 'var(--crimson)' : 'var(--jade)';
+    const authorLabel = isMe
+      ? (p.author || 'Mình') + ' 🌸'
+      : (p.author || 'Người ấy') + ' 💙';
+    return `
+    <div class="diary-entry" style="border-left-color:${borderColor};">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <div class="diary-author" style="margin:0;color:${isMe ? 'var(--crimson-light)' : 'rgba(45,106,79,0.9)'};">
+          ${authorLabel}
+        </div>
+        <div class="diary-date" style="margin:0;">${p.time} · ${DEITY_NAMES[p.deity] || p.deity}</div>
+      </div>
       <div class="diary-text">${p.text}</div>
     </div>
-  `).join('');
+  `}).join('');
 }
 
 // ============ HEXAGRAM ============
@@ -2418,16 +2516,21 @@ async function sendMessage() {
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-6',
         max_tokens: 300,
         system: entity.system,
         messages: state.chatHistory.slice(-10)
       })
     });
     const data = await res.json();
-    const reply = data.content?.[0]?.text || '🙏 Con hãy tĩnh tâm và hỏi lại.';
+    const reply = (data.content && data.content[0] && data.content[0].text)
+      ? data.content[0].text
+      : '🙏 Con hãy tĩnh tâm và hỏi lại.';
     state.chatHistory.push({ role: 'assistant', content: reply });
     
     document.getElementById(typingId).remove();
@@ -2620,28 +2723,139 @@ function applySkin(id) {
 
 // ============ TEA RITUAL ============
 let teaCooldown = false;
+let selectedDrinkIdx = 0;
+
+const DRINKS = [
+  { icon: '🍵', name: 'Trà tịnh tâm', color: '#c9a84c' },
+  { icon: '🍋', name: 'Trà chanh', color: '#f0d060' },
+  { icon: '💧', name: 'Nước lọc
+thanh vị', color: '#a0c8e8' },
+  { icon: '🍵', name: 'Matcha
+latte', color: '#7ab87a' },
+  { icon: '🥤', name: 'Nước ép
+trái cây', color: '#e88060' },
+  { icon: '☕', name: 'Cà phê
+sữa', color: '#8b5e3c' },
+  { icon: '🧃', name: 'Trà sữa
+trân châu', color: '#d4a0c8' },
+  { icon: '🫖', name: 'Trà hoa
+cúc', color: '#e8d880' },
+  { icon: '✨', name: 'Tự chọn', color: '#c9a84c', custom: true },
+];
+
+const PRESET_MESSAGES = [
+  'Hãy ngồi xuống, thở chậm và cảm nhận nhé 🌸',
+  'Uống đi rồi nghỉ ngơi chút nha 💙',
+  'Nhớ bạn quá nên gửi cái này nè 🥺',
+  'Chúc ngày của bạn thật vui nha 🌞',
+  'Đang nghĩ đến bạn đó ✨',
+  'Uống đi cho khoẻ, mình thương bạn 💕',
+];
+
+function initDrinkPicker() {
+  // Render drink grid
+  const grid = document.getElementById('drink-grid');
+  if (!grid) return;
+  grid.innerHTML = DRINKS.map((d, i) => `
+    <div class="drink-item ${i === 0 ? 'selected' : ''}" onclick="selectDrink(${i})">
+      <span class="d-icon">${d.icon}</span>
+      <div class="d-name">${d.name}</div>
+      ${d.custom ? '<div class="d-custom">nhập tên bên dưới</div>' : ''}
+    </div>
+  `).join('');
+
+  // Render preset messages
+  const presets = document.getElementById('preset-msgs');
+  if (presets) {
+    presets.innerHTML = PRESET_MESSAGES.map((m, i) => `
+      <div class="preset-chip" onclick="selectPreset(${i}, this)">${m}</div>
+    `).join('');
+  }
+
+  // Set default drink name
+  const nameInput = document.getElementById('drink-name-input');
+  if (nameInput) nameInput.value = DRINKS[0].name.replace('
+', ' ');
+
+  // Live preview update
+  const nameEl = document.getElementById('drink-name-input');
+  const msgEl = document.getElementById('tea-msg-input');
+  if (nameEl) nameEl.addEventListener('input', updateTeaPreview);
+  if (msgEl) msgEl.addEventListener('input', updateTeaPreview);
+  updateTeaPreview();
+}
+
+function selectDrink(idx) {
+  selectedDrinkIdx = idx;
+  document.querySelectorAll('.drink-item').forEach((el, i) => {
+    el.classList.toggle('selected', i === idx);
+  });
+  const drink = DRINKS[idx];
+  const nameInput = document.getElementById('drink-name-input');
+  if (nameInput && !drink.custom) nameInput.value = drink.name.replace('
+', ' ');
+  updateTeaPreview();
+}
+
+function selectPreset(idx, el) {
+  document.querySelectorAll('.preset-chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  const msgInput = document.getElementById('tea-msg-input');
+  if (msgInput) msgInput.value = PRESET_MESSAGES[idx];
+  updateTeaPreview();
+}
+
+function updateTeaPreview() {
+  const drink = DRINKS[selectedDrinkIdx];
+  const nameInput = document.getElementById('drink-name-input');
+  const msgInput = document.getElementById('tea-msg-input');
+  const iconEl = document.getElementById('tea-preview-icon');
+  const nameEl = document.getElementById('tea-preview-name');
+  const msgEl = document.getElementById('tea-preview-msg');
+  if (iconEl) iconEl.textContent = drink.icon;
+  if (nameEl) nameEl.textContent = nameInput?.value || drink.name.replace('
+', ' ');
+  if (msgEl) msgEl.textContent = msgInput?.value || PRESET_MESSAGES[0];
+}
+
 async function offerTea() {
-  if (teaCooldown) { showToast('🍵 Đã dâng trà rồi — hãy đợi người ấy nhận nhé'); return; }
-  const cup = document.getElementById('tea-cup-svg');
-  cup.classList.add('offered');
+  if (teaCooldown) { showToast('🍵 Vừa dâng rồi — chờ người ấy nhận nhé!'); return; }
+
+  const drink = DRINKS[selectedDrinkIdx];
+  const drinkName = document.getElementById('drink-name-input')?.value.trim() || drink.name.replace('
+', ' ');
+  const customMsg = document.getElementById('tea-msg-input')?.value.trim() || PRESET_MESSAGES[0];
+  const myName = state.userProfile?.name || state.currentUser?.displayName || 'Người ấy';
+
   teaCooldown = true;
-  document.getElementById('tea-status').textContent = '☕ Đang dâng trà...';
-  await showMist('🍵 Tách trà tịnh tâm đang được dâng...');
-  document.getElementById('tea-status').textContent = '✅ Đã dâng! Người ấy sẽ nhận được thông báo 🌸';
-  showToast('🍵 Đã dâng trà cho người ấy!');
-  // Firebase notification
+  document.getElementById('tea-send-btn').disabled = true;
+  document.getElementById('tea-status').textContent = `${drink.icon} Đang gửi ${drinkName}...`;
+
+  await showMist(`${drink.icon} ${drinkName} đang bay đến người ấy...`);
+
+  document.getElementById('tea-status').textContent = `✅ Đã gửi ${drinkName}! Người ấy sẽ nhận được thông báo 🌸`;
+  showToast(`${drink.icon} Đã gửi ${drinkName} cho người ấy!`);
+
+  // Firebase notification to partner
   if (firebaseDb && state.currentUser && state.partnerId) {
     firebaseDb.ref('notifications/' + state.partnerId).push({
-      from: state.currentUser.uid, fromName: state.userProfile?.name || 'Người ấy',
-      message: '🍵 ' + (state.userProfile?.name || 'Người ấy') + ' vừa mời bạn một tách trà tịnh tâm. Hãy ngồi xuống, thở chậm, và cảm nhận sự quan tâm này 🌸',
-      type: 'tea', timestamp: Date.now(), read: false
+      from: state.currentUser.uid,
+      fromName: myName,
+      message: `${drink.icon} ${myName} vừa gửi bạn một ${drinkName}! "${customMsg}"`,
+      type: 'tea',
+      drinkIcon: drink.icon,
+      drinkName,
+      timestamp: Date.now(),
+      read: false
     });
   }
+
+  // Reset after cooldown
   setTimeout(() => {
     teaCooldown = false;
-    cup.classList.remove('offered');
-    document.getElementById('tea-status').textContent = 'Nhấn vào tách trà để dâng 🙏';
-  }, 30000); // 30s cooldown
+    document.getElementById('tea-send-btn').disabled = false;
+    document.getElementById('tea-status').textContent = '';
+  }, 20000);
 }
 
 // ============ WISH WALL ============
@@ -2873,6 +3087,7 @@ async function linkPartnerExclusive() {
 function initSanctuary() {
   initChallenge();
   renderWishes();
+  initDrinkPicker();
   if (state.partnerId) {
     showUnlinkSection();
     loadPartnerWishes();
@@ -3193,12 +3408,19 @@ function renderNotifications() {
     list.innerHTML = '<div style="text-align:center;color:rgba(201,168,76,0.4);font-size:13px;padding:20px 0;">Chưa có thông điệp nào 🌸</div>';
     return;
   }
-  list.innerHTML = state.notifications.slice(0, 20).map(n => `
-    <div style="background:rgba(201,168,76,${n.read?'0.05':'0.1'});border:1px solid rgba(201,168,76,${n.read?'0.1':'0.25'});border-radius:12px;padding:12px;">
-      <div style="font-size:9px;color:rgba(201,168,76,0.5);margin-bottom:5px;letter-spacing:0.1em;">${n.fromName || 'Người ấy'} · ${new Date(n.timestamp).toLocaleDateString('vi-VN')}</div>
-      <div style="font-size:13px;color:rgba(240,208,128,0.9);line-height:1.6;">${n.message}</div>
+  list.innerHTML = state.notifications.slice(0, 20).map(n => {
+    const typeIcon = n.type === 'tea' ? '🍵' : n.type === 'challenge' ? '🌿' : n.type === 'care_nudge' ? '💌' : '🔔';
+    const timeStr = new Date(n.timestamp).toLocaleString('vi-VN', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+    return `
+    <div style="background:rgba(201,168,76,${n.read?'0.04':'0.1'});border:1px solid rgba(201,168,76,${n.read?'0.1':'0.3'});border-radius:12px;padding:14px;position:relative;">
+      ${!n.read ? '<div style="position:absolute;top:10px;right:10px;width:7px;height:7px;border-radius:50%;background:var(--crimson-light);"></div>' : ''}
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:7px;">
+        <span style="font-size:16px;">${typeIcon}</span>
+        <span style="font-size:10px;color:rgba(201,168,76,0.6);letter-spacing:0.05em;">${n.fromName || 'Người ấy'} · ${timeStr}</span>
+      </div>
+      <div style="font-size:14px;color:rgba(240,208,128,0.92);line-height:1.65;">${n.message}</div>
     </div>
-  `).join('');
+  `}).join('');
 }
 
 // Push notification permission (web push)
