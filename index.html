@@ -1,0 +1,3231 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>🌸 Không Gian Của Chúng Mình 🌸</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600&family=IM+Fell+English:ital@0;1&family=Noto+Serif+Vietnamese:wght@300;400;600&display=swap" rel="stylesheet">
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<style>
+  :root {
+    --gold: #c9a84c;
+    --gold-light: #f0d080;
+    --gold-pale: #fdf3d0;
+    --crimson: #8b1a2f;
+    --crimson-light: #c44060;
+    --ink: #1a0a00;
+    --smoke: #f5ede0;
+    --jade: #2d6a4f;
+    --incense: #6b3a2a;
+    --lotus-pink: #e8a0b4;
+    --lotus-pale: #fde8f0;
+    --bg: #0d0503;
+    --paper: #faf3e8;
+    --mist: rgba(201,168,76,0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Cormorant Garamond', 'Noto Serif Vietnamese', Georgia, serif;
+    font-size: 17px; font-weight: 500; letter-spacing: 0.015em;
+    background: var(--bg);
+    color: var(--paper);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ---- PARTICLES ---- */
+  #particles {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 0; overflow: hidden;
+  }
+  .particle {
+    position: absolute;
+    border-radius: 50%;
+    animation: float-up linear infinite;
+    opacity: 0;
+  }
+  @keyframes float-up {
+    0% { transform: translateY(100vh) translateX(0) scale(0); opacity: 0; }
+    10% { opacity: 0.6; }
+    90% { opacity: 0.3; }
+    100% { transform: translateY(-20px) translateX(var(--drift)) scale(1.2); opacity: 0; }
+  }
+
+  /* ---- NAV TABS ---- */
+  #app { position: relative; z-index: 1; max-width: 520px; margin: 0 auto; min-height: 100vh; }
+
+  .tab-bar {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 520px;
+    display: flex; justify-content: space-around; align-items: center;
+    background: linear-gradient(to top, rgba(13,5,3,0.98), rgba(13,5,3,0.85));
+    border-top: 1px solid rgba(201,168,76,0.3);
+    padding: 8px 0 max(8px, env(safe-area-inset-bottom));
+    z-index: 100; backdrop-filter: blur(12px);
+  }
+  .tab-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 1px;
+    background: none; border: none; color: rgba(201,168,76,0.5);
+    font-size: 8px; font-family: 'Cormorant Garamond', 'Noto Serif Vietnamese', serif;
+    cursor: pointer; padding: 4px 4px; transition: all 0.3s; letter-spacing: 0.02em;
+    flex:1;
+  }
+  .tab-btn.active { color: var(--gold); }
+  .tab-btn .icon { font-size: 20px; }
+  .tab-btn.active .icon { filter: drop-shadow(0 0 6px var(--gold)); }
+
+  /* Desktop sidebar nav */
+  #desktop-nav { display: none; }
+  .dnav-btn {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    background: none; border: none; color: rgba(201,168,76,0.5);
+    font-size: 8px; font-family: 'Cormorant Garamond', 'Noto Serif Vietnamese', serif;
+    cursor: pointer; padding: 10px 14px; transition: all 0.3s; border-radius: 12px;
+    letter-spacing: 0.04em; white-space: nowrap;
+  }
+  .dnav-btn:hover { background: rgba(201,168,76,0.1); color: var(--gold); }
+  .dnav-btn.active { background: rgba(201,168,76,0.15); color: var(--gold); }
+  .dnav-btn .dicon { font-size: 20px; }
+  .dnav-btn.active .dicon { filter: drop-shadow(0 0 5px var(--gold)); }
+
+  @media (min-width: 860px) {
+    .tab-bar { display: none !important; }
+    #desktop-nav {
+      display: flex !important;
+      flex-direction: column; gap: 4px; align-items: stretch;
+      position: fixed; left: calc(50% - 420px); top: 50%; transform: translateY(-50%);
+      background: rgba(13,5,3,0.92); border: 1px solid rgba(201,168,76,0.2);
+      border-radius: 20px; padding: 16px 8px; backdrop-filter: blur(16px); z-index: 100;
+      min-width: 90px;
+    }
+    #app { max-width: 520px; }
+    .page { padding-bottom: 30px; }
+    #buddha-chat { height: 100vh !important; }
+  }
+
+  /* ---- PAGES ---- */
+  .page { display: none; min-height: 100vh; padding-bottom: 80px; }
+  .page.active { display: block; }
+
+  /* ---- HOME ---- */
+  #home {
+    background: radial-gradient(ellipse at 50% 20%, rgba(139,26,47,0.4) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 80%, rgba(45,106,79,0.2) 0%, transparent 50%),
+                var(--bg);
+    display: flex; flex-direction: column; align-items: center;
+    padding: 40px 20px 80px;
+  }
+  .home-title {
+    font-family: 'IM Fell English', 'Cormorant Garamond', serif;
+    font-size: 13px; letter-spacing: 0.4em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 8px; opacity: 0.8;
+    animation: fade-in 1.5s ease forwards;
+  }
+  .home-main-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 38px; font-weight: 300; font-style: italic;
+    text-align: center; line-height: 1.2;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold), var(--crimson-light));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    animation: fade-in 2s ease forwards;
+    margin-bottom: 6px;
+  }
+  .home-sub {
+    font-size: 11px; color: rgba(201,168,76,0.6); letter-spacing: 0.2em;
+    text-align: center; margin-bottom: 30px;
+    animation: fade-in 2.5s ease forwards;
+  }
+  @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+  .lotus-container {
+    position: relative; width: 200px; height: 200px;
+    margin: 0 auto 30px;
+  }
+  .lotus-svg { width: 100%; height: 100%; animation: lotus-glow 3s ease-in-out infinite; }
+  @keyframes lotus-glow {
+    0%, 100% { filter: drop-shadow(0 0 10px rgba(201,168,76,0.4)); }
+    50% { filter: drop-shadow(0 0 25px rgba(201,168,76,0.8)) drop-shadow(0 0 50px rgba(228,100,130,0.3)); }
+  }
+
+  .home-quote {
+    font-style: italic; font-size: 14px; line-height: 1.8;
+    text-align: center; color: rgba(240,208,128,0.8);
+    max-width: 300px; margin: 0 auto 30px;
+    border-left: 2px solid var(--crimson);
+    padding-left: 16px; text-align: left;
+  }
+
+  .counter-section {
+    background: rgba(201,168,76,0.08);
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 16px; padding: 20px; width: 100%;
+    margin-bottom: 20px; text-align: center;
+  }
+  .counter-label { font-size: 10px; letter-spacing: 0.3em; color: var(--gold); opacity: 0.7; margin-bottom: 8px; }
+  .counter-value { font-family: 'Cormorant Garamond', serif; font-size: 48px; color: var(--gold-light); line-height: 1; }
+  .counter-sub { font-size: 11px; color: rgba(240,208,128,0.5); margin-top: 4px; }
+
+  .home-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; }
+  .home-card {
+    background: rgba(201,168,76,0.06);
+    border: 1px solid rgba(201,168,76,0.15);
+    border-radius: 14px; padding: 16px; cursor: pointer;
+    transition: all 0.3s; text-align: center;
+  }
+  .home-card:hover, .home-card:active { background: rgba(201,168,76,0.15); border-color: rgba(201,168,76,0.4); transform: translateY(-2px); }
+  .home-card .card-icon { font-size: 28px; margin-bottom: 6px; }
+  .home-card .card-label { font-size: 11px; color: var(--gold); letter-spacing: 0.1em; }
+  .home-card .card-desc { font-size: 9px; color: rgba(240,208,128,0.5); margin-top: 3px; }
+
+  /* ---- SHRINE ---- */
+  #shrine {
+    background: radial-gradient(ellipse at 50% 0%, rgba(139,26,47,0.5) 0%, transparent 50%), var(--bg);
+    padding: 20px 20px 80px;
+  }
+  .page-header {
+    text-align: center; padding: 20px 0 24px;
+    border-bottom: 1px solid rgba(201,168,76,0.15); margin-bottom: 24px;
+  }
+  .page-header .page-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px; font-weight: 300;
+    background: linear-gradient(135deg, var(--gold-light), var(--gold));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .page-header .page-sub { font-size: 10px; color: rgba(201,168,76,0.5); letter-spacing: 0.25em; margin-top: 4px; font-weight:400; }
+
+  .deity-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+  .deity-card {
+    background: linear-gradient(135deg, rgba(201,168,76,0.08), rgba(139,26,47,0.08));
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 14px; padding: 14px 8px;
+    cursor: pointer; transition: all 0.3s; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .deity-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .deity-card:hover::before, .deity-card.selected::before { opacity: 1; }
+  .deity-card.selected { border-color: var(--gold); background: rgba(201,168,76,0.15); }
+  .deity-icon { font-size: 32px; margin-bottom: 6px; display: block; }
+  .deity-name { font-size: 11px; font-weight: 500; color: var(--gold); line-height: 1.3; }
+  .deity-title { font-size: 8px; color: rgba(240,208,128,0.4); margin-top: 2px; line-height: 1.3; }
+
+  .incense-section {
+    background: rgba(107,58,42,0.2);
+    border: 1px solid rgba(201,168,76,0.15);
+    border-radius: 16px; padding: 20px; margin-bottom: 20px; text-align: center;
+  }
+  .incense-title { font-size: 12px; color: var(--gold); letter-spacing: 0.2em; margin-bottom: 16px; }
+  .incense-sticks { display: flex; justify-content: center; gap: 8px; margin-bottom: 16px; }
+  .stick-btn {
+    background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 8px; padding: 8px 14px; cursor: pointer; color: var(--gold);
+    font-size: 18px; transition: all 0.2s;
+  }
+  .stick-btn:active { transform: scale(0.95); background: rgba(201,168,76,0.25); }
+  #incense-display {
+    min-height: 80px; display: flex; justify-content: center; align-items: flex-end; gap: 4px;
+  }
+  .incense-stick-anim { display: flex; flex-direction: column; align-items: center; gap: 0; }
+  .smoke-trail {
+    width: 2px; background: linear-gradient(to top, rgba(201,168,76,0.6), transparent);
+    animation: smoke-rise 2s ease-in-out infinite;
+    border-radius: 2px;
+  }
+  @keyframes smoke-rise {
+    0% { height: 20px; opacity: 0.8; transform: scaleX(1); }
+    50% { transform: scaleX(1.5) translateX(3px); }
+    100% { height: 40px; opacity: 0; transform: scaleX(2) translateX(-3px); }
+  }
+  .stick-body { width: 3px; height: 50px; background: linear-gradient(to bottom, #8b4513, #5c2d0a); border-radius: 2px; }
+  .stick-tip { width: 6px; height: 6px; background: #ff6600; border-radius: 50%; box-shadow: 0 0 8px #ff4400; animation: ember 1s ease-in-out infinite alternate; }
+  @keyframes ember { from { box-shadow: 0 0 4px #ff4400; } to { box-shadow: 0 0 12px #ff6600, 0 0 20px rgba(255,100,0,0.4); } }
+
+  .prayer-input {
+    width: 100%; background: rgba(201,168,76,0.05);
+    border: 1px solid rgba(201,168,76,0.2); border-radius: 12px;
+    padding: 12px; color: var(--paper); font-family: 'Cormorant Garamond', 'Noto Serif Vietnamese', serif;
+    font-size: 13px; resize: none; outline: none; min-height: 80px;
+    margin-bottom: 12px;
+  }
+  .prayer-input::placeholder { color: rgba(201,168,76,0.3); }
+  .prayer-input:focus { border-color: rgba(201,168,76,0.5); }
+
+  .btn-gold {
+    background: linear-gradient(135deg, var(--gold), var(--crimson));
+    border: none; border-radius: 10px; padding: 12px 24px;
+    color: white; font-family: 'Cormorant Garamond', 'Noto Serif Vietnamese', serif;
+    font-size: 12px; letter-spacing: 0.1em; cursor: pointer;
+    width: 100%; transition: all 0.3s; font-weight: 600;
+  }
+  .btn-gold:active { transform: scale(0.98); opacity: 0.9; }
+
+  /* ---- DIVINATION ---- */
+  #divination {
+    background: radial-gradient(ellipse at 30% 50%, rgba(45,106,79,0.3) 0%, transparent 50%),
+                radial-gradient(ellipse at 70% 20%, rgba(139,26,47,0.3) 0%, transparent 50%), var(--bg);
+    padding: 20px 20px 80px;
+  }
+  .divination-tabs {
+    display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 4px;
+  }
+  .div-tab {
+    background: rgba(201,168,76,0.08); border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 20px; padding: 7px 14px; white-space: nowrap;
+    color: rgba(201,168,76,0.6); font-size: 11px; cursor: pointer;
+    transition: all 0.2s; font-family: 'Cormorant Garamond', 'Noto Serif Vietnamese', serif;
+  }
+  .div-tab.active { background: rgba(201,168,76,0.2); color: var(--gold); border-color: var(--gold); }
+
+  .div-panel { display: none; }
+  .div-panel.active { display: block; }
+
+  /* Xin quẻ */
+  .que-container { text-align: center; padding: 20px 0; }
+  .que-title { font-family: 'Cormorant Garamond', serif; font-size: 22px; color: var(--gold); margin-bottom: 6px; }
+  .que-sub { font-size: 10px; color: rgba(201,168,76,0.5); letter-spacing: 0.2em; margin-bottom: 24px; }
+  .coin-area { display: flex; justify-content: center; gap: 16px; margin: 20px 0; }
+  .coin {
+    width: 60px; height: 60px; border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, var(--gold-light), var(--gold), #8b6914);
+    border: 3px solid var(--gold);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; cursor: pointer; transition: all 0.6s;
+    box-shadow: 0 4px 15px rgba(201,168,76,0.3);
+    user-select: none;
+  }
+  .coin.flipping { animation: coin-flip 0.6s ease-in-out; }
+  @keyframes coin-flip {
+    0% { transform: rotateY(0); }
+    50% { transform: rotateY(90deg) scale(0.8); }
+    100% { transform: rotateY(0); }
+  }
+  .coin.heads { background: radial-gradient(circle at 35% 35%, var(--gold-light), var(--gold), #8b6914); }
+  .coin.tails { background: radial-gradient(circle at 35% 35%, #c0c0c0, #888, #444); border-color: #999; }
+  .hexagram-display {
+    margin: 20px auto; max-width: 280px;
+    background: rgba(201,168,76,0.06);
+    border: 1px solid rgba(201,168,76,0.15);
+    border-radius: 16px; padding: 20px;
+  }
+  .hexagram-lines { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; align-items: center; }
+  .hex-line { display: flex; gap: 8px; align-items: center; }
+  .hex-seg { height: 6px; border-radius: 3px; background: var(--gold); transition: all 0.5s; }
+  .hex-line.yang .hex-seg { width: 60px; }
+  .hex-line.yin .hex-seg { width: 26px; }
+  .hex-name { font-family: 'Cormorant Garamond', serif; font-size: 20px; color: var(--gold-light); text-align: center; margin-bottom: 6px; }
+  .hex-meaning { font-size: 12px; color: rgba(240,208,128,0.7); text-align: center; line-height: 1.6; }
+
+  /* Tử vi */
+  .tuvi-form { display: flex; flex-direction: column; gap: 12px; }
+  .tuvi-label { font-size: 10px; color: var(--gold); letter-spacing: 0.15em; margin-bottom: 4px; display: block; }
+  .tuvi-select, .tuvi-input {
+    width: 100%; background: rgba(201,168,76,0.05);
+    border: 1px solid rgba(201,168,76,0.2); border-radius: 10px;
+    padding: 11px 14px; color: var(--paper); font-family: 'Cormorant Garamond', 'Noto Serif Vietnamese', serif;
+    font-size: 13px; outline: none;
+  }
+  .tuvi-select option { background: #1a0a00; }
+  .tuvi-result {
+    background: rgba(201,168,76,0.06); border: 1px solid rgba(201,168,76,0.15);
+    border-radius: 14px; padding: 18px; margin-top: 16px; display: none;
+  }
+  .tuvi-result.show { display: block; }
+  .tuvi-result-title { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: var(--gold); margin-bottom: 10px; }
+  .tuvi-result-text { font-size: 12px; color: rgba(240,208,128,0.8); line-height: 1.8; }
+
+  /* ---- MEMORIES ---- */
+  #memories {
+    background: var(--bg); padding: 20px 20px 80px;
+  }
+  .upload-zone {
+    border: 2px dashed rgba(201,168,76,0.3); border-radius: 16px;
+    padding: 30px 20px; text-align: center; cursor: pointer;
+    margin-bottom: 20px; transition: all 0.3s;
+    background: rgba(201,168,76,0.03);
+  }
+  .upload-zone:active { border-color: var(--gold); background: rgba(201,168,76,0.1); }
+  .upload-icon { font-size: 36px; margin-bottom: 8px; }
+  .upload-text { font-size: 12px; color: rgba(201,168,76,0.6); }
+  #file-input { display: none; }
+  .photos-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 20px; }
+  .photo-item {
+    aspect-ratio: 1; border-radius: 8px; overflow: hidden;
+    border: 1px solid rgba(201,168,76,0.2); position: relative; cursor: pointer;
+  }
+  .photo-item img { width: 100%; height: 100%; object-fit: cover; }
+  .photo-item .photo-overlay {
+    position: absolute; inset: 0; background: rgba(0,0,0,0.5);
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0; transition: opacity 0.2s;
+  }
+  .photo-item:hover .photo-overlay { opacity: 1; }
+
+  .diary-section { margin-top: 10px; }
+  .diary-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .diary-title { font-family: 'Cormorant Garamond', serif; font-size: 20px; color: var(--gold); }
+  .btn-small {
+    background: rgba(201,168,76,0.15); border: 1px solid rgba(201,168,76,0.3);
+    border-radius: 8px; padding: 6px 12px; color: var(--gold);
+    font-size: 10px; cursor: pointer; font-family: 'Cormorant Garamond', 'Noto Serif Vietnamese', serif;
+  }
+  .diary-entry {
+    background: rgba(201,168,76,0.06); border: 1px solid rgba(201,168,76,0.1);
+    border-left: 3px solid var(--crimson);
+    border-radius: 0 12px 12px 0; padding: 14px; margin-bottom: 10px;
+  }
+  .diary-date { font-size: 9px; color: var(--gold); letter-spacing: 0.15em; margin-bottom: 6px; }
+  .diary-author { font-size: 9px; color: var(--crimson-light); margin-bottom: 6px; }
+  .diary-text { font-size: 15px; color: rgba(240,208,128,0.9); line-height: 1.75; }
+
+  .diary-compose {
+    background: rgba(201,168,76,0.06); border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 14px; padding: 16px; display: none;
+  }
+  .diary-compose.show { display: block; }
+  .name-row { display: flex; gap: 8px; margin-bottom: 10px; }
+  .name-btn {
+    flex: 1; background: rgba(201,168,76,0.08); border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 8px; padding: 8px; color: rgba(201,168,76,0.6);
+    font-family: 'Cormorant Garamond', 'Noto Serif Vietnamese', serif; font-size: 11px; cursor: pointer; transition: all 0.2s;
+  }
+  .name-btn.selected { background: rgba(201,168,76,0.25); color: var(--gold); border-color: var(--gold); }
+
+  /* ---- BUDDHA CHAT ---- */
+  #buddha-chat {
+    background: radial-gradient(ellipse at 50% 0%, rgba(107,58,42,0.5) 0%, transparent 50%), var(--bg);
+    display: flex; flex-direction: column; height: calc(100dvh - 80px); padding-bottom: 0; overflow: hidden;
+  }
+  .chat-header {
+    padding: 20px 20px 16px; text-align: center;
+    border-bottom: 1px solid rgba(201,168,76,0.15);
+    background: linear-gradient(to bottom, rgba(13,5,3,0.95), transparent);
+    position: sticky; top: 0; z-index: 10;
+  }
+  .chat-avatar {
+    width: 60px; height: 60px; border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, var(--gold-light), var(--gold), var(--incense));
+    margin: 0 auto 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    box-shadow: 0 0 20px rgba(201,168,76,0.4), 0 0 40px rgba(201,168,76,0.15);
+    animation: aura-pulse 3s ease-in-out infinite;
+  }
+  @keyframes aura-pulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(201,168,76,0.4), 0 0 40px rgba(201,168,76,0.15); }
+    50% { box-shadow: 0 0 30px rgba(201,168,76,0.7), 0 0 60px rgba(201,168,76,0.3), 0 0 80px rgba(228,100,130,0.1); }
+  }
+  .chat-entity-name { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: var(--gold); }
+  .chat-entity-sub { font-size: 9px; color: rgba(201,168,76,0.5); letter-spacing: 0.2em; }
+
+  .entity-switcher { display: flex; gap: 6px; justify-content: center; padding: 10px 20px; overflow-x: auto; }
+  .entity-btn {
+    background: rgba(201,168,76,0.06); border: 1px solid rgba(201,168,76,0.15);
+    border-radius: 20px; padding: 5px 12px; font-size: 10px; color: rgba(201,168,76,0.6);
+    cursor: pointer; white-space: nowrap; font-family: 'Cormorant Garamond', 'Noto Serif Vietnamese', serif; transition: all 0.2s;
+  }
+  .entity-btn.active { background: rgba(201,168,76,0.2); color: var(--gold); border-color: var(--gold); }
+
+  .chat-messages {
+    flex: 1; overflow-y: auto; padding: 16px 16px;
+    display: flex; flex-direction: column; gap: 12px;
+    scroll-behavior: smooth;
+  }
+  .msg { display: flex; gap: 8px; max-width: 85%; }
+  .msg.user { flex-direction: row-reverse; align-self: flex-end; }
+  .msg-bubble {
+    padding: 10px 14px; border-radius: 16px;
+    font-size: 15px; line-height: 1.65;
+  }
+  .msg.bot .msg-bubble {
+    background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.15);
+    color: rgba(240,208,128,0.9); border-radius: 4px 16px 16px 16px;
+  }
+  .msg.user .msg-bubble {
+    background: linear-gradient(135deg, rgba(139,26,47,0.4), rgba(107,58,42,0.4));
+    border: 1px solid rgba(139,26,47,0.3);
+    color: rgba(240,208,128,0.9); border-radius: 16px 4px 16px 16px;
+  }
+  .msg-avatar { width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 16px; background: rgba(201,168,76,0.15); border: 1px solid rgba(201,168,76,0.2); margin-top: 2px; }
+  .typing-indicator { display: flex; gap: 4px; padding: 10px 14px; }
+  .typing-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); animation: typing 1.2s ease-in-out infinite; }
+  .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes typing { 0%, 60%, 100% { transform: translateY(0); opacity: 0.4; } 30% { transform: translateY(-6px); opacity: 1; } }
+
+  .chat-input-area {
+    padding: 12px 16px max(12px, env(safe-area-inset-bottom));
+    background: linear-gradient(to top, rgba(13,5,3,0.98), rgba(13,5,3,0.9));
+    border-top: 1px solid rgba(201,168,76,0.15);
+    display: flex; gap: 10px; align-items: flex-end;
+  }
+  .chat-textarea {
+    flex: 1; background: rgba(201,168,76,0.07);
+    border: 1px solid rgba(201,168,76,0.2); border-radius: 20px;
+    padding: 10px 16px; color: var(--paper); font-family: 'Cormorant Garamond', 'Noto Serif Vietnamese', serif;
+    font-size: 13px; resize: none; outline: none; max-height: 100px; overflow-y: auto;
+    line-height: 1.4;
+  }
+  .chat-textarea:focus { border-color: rgba(201,168,76,0.4); }
+  .send-btn {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold), var(--crimson));
+    border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    font-size: 16px; flex-shrink: 0; transition: all 0.2s;
+  }
+  .send-btn:active { transform: scale(0.92); }
+  .send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+    z-index: 200; display: flex; align-items: center; justify-content: center;
+    opacity: 0; pointer-events: none; transition: opacity 0.3s;
+    backdrop-filter: blur(4px); padding: 20px;
+  }
+  .modal-overlay.show { opacity: 1; pointer-events: all; }
+  .modal {
+    background: linear-gradient(135deg, rgba(26,10,0,0.97), rgba(13,5,3,0.97));
+    border: 1px solid rgba(201,168,76,0.3); border-radius: 20px;
+    padding: 24px; width: 100%; max-width: 340px; max-height: 80vh; overflow-y: auto;
+  }
+  .modal-title { font-family: 'Cormorant Garamond', serif; font-size: 22px; color: var(--gold); margin-bottom: 16px; text-align: center; }
+  .modal-close { position: absolute; top: 16px; right: 16px; background: none; border: none; color: var(--gold); font-size: 20px; cursor: pointer; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px);
+    background: rgba(201,168,76,0.2); border: 1px solid var(--gold);
+    border-radius: 20px; padding: 10px 20px; color: var(--gold);
+    font-size: 12px; z-index: 300; opacity: 0; transition: all 0.3s;
+    pointer-events: none; white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* Photo modal */
+  #photo-modal .modal { background: transparent; border: none; padding: 0; max-width: 100%; }
+  #photo-modal img { width: 100%; border-radius: 12px; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.3); border-radius: 2px; }
+
+  /* ---- MIST OVERLAY ---- */
+  #mist-overlay {
+    position: fixed; inset: 0; z-index: 9999; pointer-events: none;
+    background: radial-gradient(ellipse at 50% 40%, rgba(200,180,140,0.18) 0%, rgba(180,160,120,0.32) 40%, rgba(140,120,80,0.22) 70%, transparent 100%);
+    opacity: 0; transition: opacity 0.4s ease;
+    backdrop-filter: blur(3px);
+  }
+  #mist-overlay.show { opacity: 1; pointer-events: all; }
+  #mist-overlay .mist-particles { position: absolute; inset: 0; overflow: hidden; }
+  .mist-p {
+    position: absolute; border-radius: 50%;
+    background: radial-gradient(circle, rgba(220,200,160,0.5), transparent);
+    animation: mist-drift linear infinite;
+  }
+  @keyframes mist-drift {
+    0% { transform: translateX(-20px) translateY(0) scale(0.8); opacity: 0; }
+    20% { opacity: 1; }
+    80% { opacity: 0.6; }
+    100% { transform: translateX(40px) translateY(-30px) scale(1.4); opacity: 0; }
+  }
+  #mist-overlay .mist-text {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    font-family: 'Cormorant Garamond', serif; font-size: 22px; font-style: italic;
+    color: rgba(240,208,128,0.9); text-align: center; letter-spacing: 0.15em;
+    text-shadow: 0 0 20px rgba(201,168,76,0.6);
+    opacity: 0; transition: opacity 0.5s ease 0.3s;
+  }
+  #mist-overlay.show .mist-text { opacity: 1; }
+
+  /* ---- SHARED SANCTUARY PAGE ---- */
+  #sanctuary {
+    background: radial-gradient(ellipse at 50% 0%, rgba(107,58,42,0.4) 0%, transparent 50%),
+                radial-gradient(ellipse at 20% 80%, rgba(45,106,79,0.2) 0%, transparent 40%), var(--bg);
+    padding: 20px 20px 80px;
+  }
+  .sanctuary-section {
+    background: rgba(201,168,76,0.06); border: 1px solid rgba(201,168,76,0.15);
+    border-radius: 18px; padding: 20px; margin-bottom: 16px;
+  }
+  .sanctuary-title {
+    font-family: 'Cormorant Garamond', serif; font-size: 20px; color: var(--gold);
+    margin-bottom: 4px; display: flex; align-items: center; gap: 8px;
+  }
+  .sanctuary-sub { font-size: 9px; color: rgba(201,168,76,0.5); letter-spacing: 0.25em; margin-bottom: 16px; }
+
+  /* Tea ritual */
+  .tea-cup {
+    width: 70px; height: 70px; margin: 0 auto 12px; cursor: pointer;
+    filter: drop-shadow(0 0 8px rgba(201,168,76,0.3));
+    transition: all 0.3s;
+  }
+  .tea-cup:active { transform: scale(0.92); }
+  .tea-cup.offered { filter: drop-shadow(0 0 16px rgba(201,168,76,0.8)); }
+
+  /* Wish wall */
+  .wish-wall { min-height: 120px; position: relative; }
+  .wish-note {
+    background: linear-gradient(135deg, rgba(201,168,76,0.12), rgba(139,26,47,0.08));
+    border: 1px solid rgba(201,168,76,0.2); border-radius: 10px;
+    padding: 12px; margin-bottom: 8px; position: relative;
+  }
+  .wish-note .wish-author { font-size: 9px; color: var(--gold); margin-bottom: 4px; letter-spacing: 0.1em; }
+  .wish-note .wish-text { font-size: 13px; color: rgba(240,208,128,0.85); line-height: 1.6; font-style: italic; }
+  .wish-locked { filter: blur(4px); user-select: none; }
+  .wish-compose { display: none; }
+  .wish-compose.show { display: block; }
+
+  /* Mindfulness challenge */
+  .challenge-card {
+    background: linear-gradient(135deg, rgba(45,106,79,0.15), rgba(201,168,76,0.08));
+    border: 1px solid rgba(45,106,79,0.3); border-radius: 14px; padding: 16px;
+    margin-bottom: 12px;
+  }
+  .challenge-day { font-size: 9px; color: rgba(45,106,79,0.8); letter-spacing: 0.25em; margin-bottom: 6px; }
+  .challenge-text { font-family: 'Cormorant Garamond', serif; font-size: 17px; color: var(--paper); line-height: 1.5; margin-bottom: 12px; }
+  .merit-bar-wrap { background: rgba(0,0,0,0.3); border-radius: 20px; height: 8px; margin-bottom: 8px; overflow: hidden; }
+  .merit-bar { height: 100%; border-radius: 20px; background: linear-gradient(90deg, var(--jade), var(--gold)); transition: width 0.8s ease; }
+  .merit-label { font-size: 9px; color: rgba(201,168,76,0.5); text-align: right; }
+  .skin-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin-top: 12px; }
+  .skin-item {
+    aspect-ratio: 1; border-radius: 10px; border: 2px solid rgba(201,168,76,0.2);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 22px; transition: all 0.2s;
+    background: rgba(201,168,76,0.05); position: relative; overflow: hidden;
+  }
+  .skin-item.locked { opacity: 0.4; cursor: not-allowed; }
+  .skin-item.active { border-color: var(--gold); background: rgba(201,168,76,0.18); }
+  .skin-item .skin-label { font-size: 8px; color: rgba(201,168,76,0.6); margin-top: 4px; }
+  .skin-item .skin-lock { position: absolute; top: 4px; right: 4px; font-size: 9px; }
+
+  /* Couple xam / sync quẻ */
+  .sync-que-area { text-align: center; padding: 10px 0; }
+  .sync-btn {
+    width: 90px; height: 90px; border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, rgba(240,208,128,0.3), rgba(201,168,76,0.1));
+    border: 2px solid rgba(201,168,76,0.4); cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    margin: 0 auto 12px; transition: all 0.3s; font-size: 28px;
+  }
+  .sync-btn .sync-sub { font-size: 9px; color: rgba(201,168,76,0.6); margin-top: 3px; letter-spacing: 0.1em; }
+  .sync-btn.partner-ready { border-color: var(--gold); box-shadow: 0 0 20px rgba(201,168,76,0.4); }
+  .sync-btn.both-ready { animation: sync-pulse 0.5s ease infinite alternate; }
+  @keyframes sync-pulse { from { box-shadow: 0 0 10px rgba(201,168,76,0.4); } to { box-shadow: 0 0 30px rgba(201,168,76,0.9); } }
+  .sync-status { font-size: 12px; color: rgba(201,168,76,0.7); min-height: 20px; }
+
+  /* Unlink section in profile */
+  .danger-btn {
+    background: rgba(180,40,40,0.12); border: 1px solid rgba(180,40,40,0.3);
+    border-radius: 10px; padding: 10px 20px; color: rgba(220,100,100,0.8);
+    font-family: 'Cormorant Garamond', serif; font-size: 12px; cursor: pointer; width: 100%;
+    transition: all 0.2s;
+  }
+  .danger-btn:active { background: rgba(180,40,40,0.25); }
+</style>
+</head>
+<body>
+
+<div id="particles"></div>
+
+<div id="app">
+
+  <!-- HOME -->
+  <div id="home" class="page active">
+    <div class="home-title">✦ Không Gian Thiêng Liêng ✦</div>
+    <h1 class="home-main-title">Của Chúng Mình</h1>
+    <div class="home-sub">một nơi chỉ dành riêng cho hai ta</div>
+
+    <div class="lotus-container">
+      <svg class="lotus-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="petalGrad" cx="50%" cy="70%" r="50%">
+            <stop offset="0%" stop-color="#f0d080"/>
+            <stop offset="50%" stop-color="#c9a84c"/>
+            <stop offset="100%" stop-color="#8b1a2f"/>
+          </radialGradient>
+          <radialGradient id="centerGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#fdf3d0"/>
+            <stop offset="100%" stop-color="#c9a84c"/>
+          </radialGradient>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="3" result="blur"/>
+            <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+          </filter>
+        </defs>
+        <!-- Back petals -->
+        <ellipse cx="100" cy="85" rx="14" ry="38" fill="url(#petalGrad)" opacity="0.5" transform="rotate(-60 100 100)"/>
+        <ellipse cx="100" cy="85" rx="14" ry="38" fill="url(#petalGrad)" opacity="0.5" transform="rotate(-30 100 100)"/>
+        <ellipse cx="100" cy="85" rx="14" ry="38" fill="url(#petalGrad)" opacity="0.5" transform="rotate(30 100 100)"/>
+        <ellipse cx="100" cy="85" rx="14" ry="38" fill="url(#petalGrad)" opacity="0.5" transform="rotate(60 100 100)"/>
+        <!-- Main petals -->
+        <ellipse cx="100" cy="80" rx="16" ry="42" fill="url(#petalGrad)" transform="rotate(-45 100 100)"/>
+        <ellipse cx="100" cy="80" rx="16" ry="42" fill="url(#petalGrad)" transform="rotate(-15 100 100)"/>
+        <ellipse cx="100" cy="80" rx="16" ry="42" fill="url(#petalGrad)" transform="rotate(15 100 100)"/>
+        <ellipse cx="100" cy="80" rx="16" ry="42" fill="url(#petalGrad)" transform="rotate(45 100 100)"/>
+        <ellipse cx="100" cy="75" rx="14" ry="38" fill="url(#petalGrad)" transform="rotate(0 100 100)"/>
+        <ellipse cx="100" cy="75" rx="14" ry="38" fill="url(#petalGrad)" transform="rotate(90 100 100)"/>
+        <ellipse cx="100" cy="75" rx="14" ry="38" fill="url(#petalGrad)" transform="rotate(-90 100 100)"/>
+        <ellipse cx="100" cy="75" rx="14" ry="38" fill="url(#petalGrad)" transform="rotate(180 100 100)"/>
+        <!-- Center -->
+        <circle cx="100" cy="100" r="22" fill="url(#centerGrad)" filter="url(#glow)"/>
+        <circle cx="100" cy="100" r="14" fill="#c9a84c" opacity="0.8"/>
+        <circle cx="100" cy="100" r="7" fill="#fdf3d0"/>
+        <!-- Heart -->
+        <text x="100" y="105" text-anchor="middle" font-size="8" fill="#8b1a2f">♥</text>
+      </svg>
+    </div>
+
+    <div class="counter-section">
+      <div class="counter-label">✦ CHÚNG MÌNH ĐÃ BÊN NHAU ✦</div>
+      <div class="counter-value" id="days-counter">0</div>
+      <div class="counter-sub">ngày hạnh phúc 🌸</div>
+      <div style="margin-top:12px;">
+        <input type="date" id="anniversary-input" 
+          style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);border-radius:8px;padding:6px 10px;color:var(--gold);font-size:11px;outline:none;width:100%;text-align:center;" 
+          placeholder="Ngày bắt đầu yêu nhau">
+      </div>
+    </div>
+
+    <div class="home-quote" id="daily-quote">
+      "Tình yêu chân thật như ánh sáng của ngọn đèn — không tắt dù gió mạnh, chỉ cháy sáng hơn."
+    </div>
+
+    <div class="home-grid">
+      <div class="home-card" onclick="switchTab('shrine')">
+        <div class="card-icon">🏮</div>
+        <div class="card-label">Bàn Thờ</div>
+        <div class="card-desc">Dâng hương cầu nguyện</div>
+      </div>
+      <div class="home-card" onclick="switchTab('divination')">
+        <div class="card-icon">🎴</div>
+        <div class="card-label">Bói Toán</div>
+        <div class="card-desc">Xin quẻ · Tử vi</div>
+      </div>
+      <div class="home-card" onclick="switchTab('memories')">
+        <div class="card-icon">📸</div>
+        <div class="card-label">Kỷ Niệm</div>
+        <div class="card-desc">Ảnh & nhật ký tình yêu</div>
+      </div>
+      <div class="home-card" onclick="switchTab('buddha-chat')">
+        <div class="card-icon">🙏</div>
+        <div class="card-label">Cầu Đức Phật</div>
+        <div class="card-desc">Giao tiếp tâm linh AI</div>
+      </div>
+      <div class="home-card" onclick="switchTab('sanctuary')">
+        <div class="card-icon">🍵</div>
+        <div class="card-label">Cõi Tịnh Riêng</div>
+        <div class="card-desc">Trà · Ước nguyện · Thử thách</div>
+      </div>
+      <div class="home-card" onclick="switchTab('divination')">
+        <div class="card-icon">🎋</div>
+        <div class="card-label">Xăm Tình Duyên</div>
+        <div class="card-desc">Cùng nhau gieo quẻ đôi</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SHRINE -->
+  <div id="shrine" class="page">
+    <!-- Altar background display -->
+    <div id="altar-display" style="position:relative;width:100%;height:260px;overflow:hidden;margin-bottom:0;">
+      <div id="altar-bg" style="position:absolute;inset:0;transition:all 0.8s ease;"></div>
+      <div style="position:absolute;inset:0;background:linear-gradient(to bottom,rgba(13,5,3,0.3) 0%,rgba(13,5,3,0.1) 40%,rgba(13,5,3,0.7) 80%,rgba(13,5,3,1) 100%);pointer-events:none;z-index:2;"></div>
+      <!-- SVG deity illustration rendered here -->
+      <div id="deity-svg-container" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:3;padding-top:16px;"></div>
+      <!-- Incense smoke overlay -->
+      <div id="altar-smoke" style="position:absolute;bottom:0;left:0;right:0;height:120px;pointer-events:none;z-index:4;display:flex;justify-content:center;align-items:flex-end;gap:12px;padding-bottom:20px;"></div>
+      <!-- Deity name overlay -->
+      <div style="position:absolute;bottom:20px;left:0;right:0;text-align:center;z-index:5;">
+        <div id="altar-deity-name" style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--gold-light);text-shadow:0 0 20px rgba(201,168,76,0.8);">Đức Phật Thích Ca</div>
+        <div id="altar-deity-sub" style="font-size:9px;letter-spacing:0.35em;color:rgba(201,168,76,0.6);margin-top:2px;">PHẬT GIÁO · TỪ BI · TRÍ TUỆ</div>
+      </div>
+    </div>
+
+    <div style="padding:20px 20px 0;">
+    <div class="page-header" style="padding-top:10px;">
+      <div class="page-sub">CHỌN VỊ THẦN · DÂNG HƯƠNG · CẦU NGUYỆN</div>
+    </div>
+
+    <div class="deity-grid">
+      <div class="deity-card selected" data-deity="phat" onclick="selectDeity(this)">
+        <span class="deity-icon">☸️</span>
+        <div class="deity-name">Đức Phật Thích Ca</div>
+        <div class="deity-title">Phật Giáo</div>
+      </div>
+      <div class="deity-card" data-deity="botat" onclick="selectDeity(this)">
+        <span class="deity-icon">🪷</span>
+        <div class="deity-name">Quan Thế Âm Bồ Tát</div>
+        <div class="deity-title">Bồ Tát Từ Bi</div>
+      </div>
+      <div class="deity-card" data-deity="dibo" onclick="selectDeity(this)">
+        <span class="deity-icon">🌈</span>
+        <div class="deity-name">Địa Tạng Bồ Tát</div>
+        <div class="deity-title">Cứu Độ Chúng Sinh</div>
+      </div>
+      <div class="deity-card" data-deity="thenong" onclick="selectDeity(this)">
+        <span class="deity-icon">🌿</span>
+        <div class="deity-name">Thần Nông</div>
+        <div class="deity-title">Việt Nam</div>
+      </div>
+      <div class="deity-card" data-deity="thanhmau" onclick="selectDeity(this)">
+        <span class="deity-icon">👸</span>
+        <div class="deity-name">Thánh Mẫu Liễu Hạnh</div>
+        <div class="deity-title">Tứ Bất Tử</div>
+      </div>
+      <div class="deity-card" data-deity="tranbung" onclick="selectDeity(this)">
+        <span class="deity-icon">⚔️</span>
+        <div class="deity-name">Thánh Gióng</div>
+        <div class="deity-title">Tứ Bất Tử</div>
+      </div>
+      <div class="deity-card" data-deity="shiva" onclick="selectDeity(this)">
+        <span class="deity-icon">🔱</span>
+        <div class="deity-name">Shiva</div>
+        <div class="deity-title">Hindu Giáo</div>
+      </div>
+      <div class="deity-card" data-deity="guan" onclick="selectDeity(this)">
+        <span class="deity-icon">🐉</span>
+        <div class="deity-name">Quan Công</div>
+        <div class="deity-title">Đạo Giáo</div>
+      </div>
+      <div class="deity-card" data-deity="tao" onclick="selectDeity(this)">
+        <span class="deity-icon">☯️</span>
+        <div class="deity-name">Thái Thượng Lão Quân</div>
+        <div class="deity-title">Đạo Giáo</div>
+      </div>
+    </div>
+
+    <div class="incense-section">
+      <div class="incense-title">🕯️ Thắp Hương Cầu Nguyện</div>
+      <div class="incense-sticks">
+        <button class="stick-btn" onclick="addIncense(1)">🪔 +1</button>
+        <button class="stick-btn" onclick="addIncense(3)">🕯️ +3</button>
+        <button class="stick-btn" onclick="clearIncense()">💨 Tắt</button>
+      </div>
+      <div id="incense-display"></div>
+    </div>
+
+    <div style="margin-bottom:16px;">
+      <div style="font-size:10px;color:var(--gold);letter-spacing:0.2em;margin-bottom:8px;">✦ LỜI CẦU NGUYỆN CỦA HAI TA ✦</div>
+      <textarea class="prayer-input" id="prayer-text" placeholder="Kính bạch... Con xin cầu nguyện cho hai chúng con..."></textarea>
+      <button class="btn-gold" onclick="submitPrayer()">🙏 Dâng Lời Nguyện Cầu</button>
+    </div>
+
+    <div id="prayer-list" style="display:flex;flex-direction:column;gap:10px;"></div>
+    </div><!-- /padding wrapper -->
+  </div>
+
+  <!-- DIVINATION -->
+  <div id="divination" class="page">
+    <div class="page-header">
+      <div class="page-title">🎴 Bói Toán Tâm Linh</div>
+      <div class="page-sub">XIN QUẺ · TỬ VI · KINH DỊCH</div>
+    </div>
+
+    <div class="divination-tabs">
+      <button class="div-tab active" onclick="switchDivTab(this, 'kinh-dich')">☯ Kinh Dịch</button>
+      <button class="div-tab" onclick="switchDivTab(this, 'tuz-vi')">⭐ Tử Vi</button>
+      <button class="div-tab" onclick="switchDivTab(this, 'xin-que')">🎋 Xin Quẻ</button>
+      <button class="div-tab" onclick="switchDivTab(this, 'bai-tay')">🃏 Bài Tây</button>
+    </div>
+
+    <!-- Kinh Dịch -->
+    <div class="div-panel active" id="kinh-dich">
+      <div class="que-container">
+        <div class="que-title">☯ Gieo Quẻ Kinh Dịch</div>
+        <div class="que-sub">CLICK VÀO ĐỒNG TIỀN ĐỂ GIEO</div>
+        <div style="font-size:11px;color:rgba(201,168,76,0.6);margin-bottom:16px;">Gieo 6 lần để thành quẻ</div>
+        <div class="coin-area">
+          <div class="coin" id="coin1" onclick="flipCoin(0)">🪙</div>
+          <div class="coin" id="coin2" onclick="flipCoin(0)">🪙</div>
+          <div class="coin" id="coin3" onclick="flipCoin(0)">🪙</div>
+        </div>
+        <button class="btn-gold" onclick="throwCoins()" style="margin-bottom:16px;">🎲 Gieo Cả 3 Đồng Xu</button>
+        <div id="throw-count" style="font-size:11px;color:rgba(201,168,76,0.5);margin-bottom:16px;">Lần gieo: 0/6</div>
+        <div class="hexagram-display" id="hexagram-result" style="display:none;">
+          <div class="hexagram-lines" id="hex-lines"></div>
+          <div class="hex-name" id="hex-name"></div>
+          <div class="hex-meaning" id="hex-meaning"></div>
+        </div>
+        <button class="btn-gold" id="reset-hex" onclick="resetHexagram()" style="display:none;margin-top:12px;background:rgba(201,168,76,0.15);color:var(--gold);border:1px solid rgba(201,168,76,0.3);">🔄 Gieo Lại</button>
+      </div>
+    </div>
+
+    <!-- Tử Vi -->
+    <div class="div-panel" id="tuz-vi">
+      <div style="margin-bottom:16px;">
+        <label class="tuvi-label">Họ và tên</label>
+        <input class="tuvi-input" id="tuvi-name" placeholder="Nhập tên của bạn...">
+      </div>
+      <div style="margin-bottom:16px;">
+        <label class="tuvi-label">Năm sinh (âm lịch)</label>
+        <select class="tuvi-select" id="tuvi-year">
+          <option value="">-- Chọn năm sinh --</option>
+        </select>
+      </div>
+      <div style="margin-bottom:16px;">
+        <label class="tuvi-label">Giờ sinh</label>
+        <select class="tuvi-select" id="tuvi-hour">
+          <option value="ty">Giờ Tý (23:00 - 01:00)</option>
+          <option value="suu">Giờ Sửu (01:00 - 03:00)</option>
+          <option value="dan">Giờ Dần (03:00 - 05:00)</option>
+          <option value="mao">Giờ Mão (05:00 - 07:00)</option>
+          <option value="thin">Giờ Thìn (07:00 - 09:00)</option>
+          <option value="ti">Giờ Tị (09:00 - 11:00)</option>
+          <option value="ngo">Giờ Ngọ (11:00 - 13:00)</option>
+          <option value="mui">Giờ Mùi (13:00 - 15:00)</option>
+          <option value="than">Giờ Thân (15:00 - 17:00)</option>
+          <option value="dau">Giờ Dậu (17:00 - 19:00)</option>
+          <option value="tuat">Giờ Tuất (19:00 - 21:00)</option>
+          <option value="hoi">Giờ Hợi (21:00 - 23:00)</option>
+        </select>
+      </div>
+      <div style="margin-bottom:16px;">
+        <label class="tuvi-label">Giới tính</label>
+        <div style="display:flex;gap:10px;">
+          <label style="flex:1;display:flex;align-items:center;gap:8px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);border-radius:10px;padding:10px;cursor:pointer;">
+            <input type="radio" name="gender" value="nam" style="accent-color:var(--gold);"> <span style="font-size:12px;color:var(--gold);">Nam</span>
+          </label>
+          <label style="flex:1;display:flex;align-items:center;gap:8px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);border-radius:10px;padding:10px;cursor:pointer;">
+            <input type="radio" name="gender" value="nu" checked style="accent-color:var(--gold);"> <span style="font-size:12px;color:var(--gold);">Nữ</span>
+          </label>
+        </div>
+      </div>
+      <button class="btn-gold" onclick="readTuVi()">⭐ Xem Tử Vi</button>
+      <div class="tuvi-result" id="tuvi-result">
+        <div class="tuvi-result-title" id="tuvi-result-title"></div>
+        <div class="tuvi-result-text" id="tuvi-result-text"></div>
+      </div>
+    </div>
+
+    <!-- Xin Quẻ -->
+    <div class="div-panel" id="xin-que">
+      <div style="text-align:center;padding:20px 0;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gold);margin-bottom:8px;">🎋 Xin Quẻ Thần Linh</div>
+        <div style="font-size:11px;color:rgba(201,168,76,0.5);margin-bottom:20px;">Tĩnh tâm, thành kính rồi lắc ống quẻ</div>
+        <div id="que-tube" style="width:80px;height:120px;margin:0 auto 20px;cursor:pointer;" onclick="shakeQue()">
+          <svg viewBox="0 0 80 120" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;">
+            <defs>
+              <linearGradient id="tubeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#8b6914"/>
+                <stop offset="30%" stop-color="#c9a84c"/>
+                <stop offset="100%" stop-color="#6b4c10"/>
+              </linearGradient>
+            </defs>
+            <ellipse cx="40" cy="20" rx="32" ry="8" fill="#8b6914"/>
+            <rect x="8" y="20" width="64" height="88" fill="url(#tubeGrad)"/>
+            <ellipse cx="40" cy="108" rx="32" ry="8" fill="#6b4c10"/>
+            <rect x="12" y="24" width="56" height="80" fill="rgba(0,0,0,0.15)" rx="2"/>
+            <line x1="40" y1="10" x2="37" y2="5" stroke="#c9a84c" stroke-width="3" stroke-linecap="round" id="stick1"/>
+            <line x1="40" y1="10" x2="43" y2="3" stroke="#c9a84c" stroke-width="3" stroke-linecap="round" id="stick2"/>
+            <line x1="40" y1="10" x2="40" y2="2" stroke="#c9a84c" stroke-width="3" stroke-linecap="round" id="stick3"/>
+          </svg>
+        </div>
+        <div style="font-size:12px;color:rgba(201,168,76,0.6);margin-bottom:16px;">Nhấn vào ống để lắc quẻ</div>
+        <input class="prayer-input" id="que-question" placeholder="Hãy hỏi điều bạn muốn biết trong lòng..." style="text-align:center;">
+        <button class="btn-gold" onclick="getQue()">🙏 Xin Quẻ</button>
+        <div id="que-result" style="margin-top:20px;display:none;">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:26px;color:var(--gold);margin-bottom:8px;" id="que-number"></div>
+          <div style="font-size:16px;color:var(--gold-light);margin-bottom:10px;" id="que-name"></div>
+          <div style="font-size:13px;color:rgba(240,208,128,0.8);line-height:1.8;" id="que-text"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bài Tây Tarot-style -->
+    <div class="div-panel" id="bai-tay">
+      <div style="text-align:center;padding:20px 0;">
+        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gold);margin-bottom:8px;">🃏 Rút Bài Tình Duyên</div>
+        <div style="font-size:11px;color:rgba(201,168,76,0.5);margin-bottom:20px;">3 lá bài cho tình yêu của hai ta</div>
+        <div id="card-spread" style="display:flex;gap:10px;justify-content:center;margin-bottom:20px;">
+          <div class="tarot-card" id="card-0" onclick="revealCard(0)" style="width:80px;height:130px;background:linear-gradient(135deg,rgba(139,26,47,0.5),rgba(107,58,42,0.5));border:2px solid rgba(201,168,76,0.3);border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:30px;transition:all 0.3s;">🂠</div>
+          <div class="tarot-card" id="card-1" onclick="revealCard(1)" style="width:80px;height:130px;background:linear-gradient(135deg,rgba(139,26,47,0.5),rgba(107,58,42,0.5));border:2px solid rgba(201,168,76,0.3);border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:30px;transition:all 0.3s;">🂠</div>
+          <div class="tarot-card" id="card-2" onclick="revealCard(2)" style="width:80px;height:130px;background:linear-gradient(135deg,rgba(139,26,47,0.5),rgba(107,58,42,0.5));border:2px solid rgba(201,168,76,0.3);border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:30px;transition:all 0.3s;">🂠</div>
+        </div>
+        <div style="display:flex;gap:6px;justify-content:center;margin-bottom:16px;font-size:9px;color:rgba(201,168,76,0.5);">
+          <span style="flex:1;text-align:center;">QUÁ KHỨ</span>
+          <span style="flex:1;text-align:center;">HIỆN TẠI</span>
+          <span style="flex:1;text-align:center;">TƯƠNG LAI</span>
+        </div>
+        <button class="btn-gold" onclick="shuffleCards()">🔀 Xáo Bài Mới</button>
+        <div id="card-reading" style="margin-top:16px;display:none;background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.15);border-radius:14px;padding:16px;font-size:12px;color:rgba(240,208,128,0.8);line-height:1.8;text-align:left;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MEMORIES -->
+  <div id="memories" class="page">
+    <div class="page-header">
+      <div class="page-title">💝 Kỷ Niệm Của Hai Ta</div>
+      <div class="page-sub">ẢNH · NHẬT KÝ · KỶ NIỆM</div>
+    </div>
+
+    <div class="upload-zone" onclick="document.getElementById('file-input').click()">
+      <div class="upload-icon">📸</div>
+      <div class="upload-text">Nhấn để thêm ảnh kỷ niệm<br><span style="font-size:10px;opacity:0.6;">Ảnh lưu trong máy bạn</span></div>
+    </div>
+    <input type="file" id="file-input" accept="image/*" multiple onchange="handlePhotoUpload(event)">
+
+    <div class="photos-grid" id="photos-grid"></div>
+
+    <div class="diary-section">
+      <div class="diary-header">
+        <div class="diary-title">📖 Nhật Ký Tình Yêu</div>
+        <button class="btn-small" onclick="toggleDiaryCompose()">+ Viết</button>
+      </div>
+
+      <div class="diary-compose" id="diary-compose">
+        <div class="name-row">
+          <button class="name-btn selected" id="name-me" onclick="selectName('me')">Mình 💕</button>
+          <button class="name-btn" id="name-him" onclick="selectName('him')">Anh ấy 💙</button>
+        </div>
+        <input class="tuvi-input" id="diary-name-input" placeholder="Hoặc nhập tên..." style="margin-bottom:10px;">
+        <textarea class="prayer-input" id="diary-text-input" placeholder="Hôm nay..."></textarea>
+        <button class="btn-gold" onclick="saveDiaryEntry()">💾 Lưu Nhật Ký</button>
+      </div>
+
+      <div id="diary-entries"></div>
+    </div>
+  </div>
+
+  <!-- BUDDHA CHAT -->
+  <div id="buddha-chat" class="page">
+    <div class="chat-header">
+      <div class="chat-avatar" id="chat-avatar">🙏</div>
+      <div class="chat-entity-name" id="chat-name">Đức Phật Thích Ca</div>
+      <div class="chat-entity-sub" id="chat-sub">PHẬT GIÁO · TỪ BI · TRÍ TUỆ</div>
+    </div>
+    <div class="entity-switcher">
+      <button class="entity-btn active" onclick="switchEntity(this, 'phat')">☸ Đức Phật</button>
+      <button class="entity-btn" onclick="switchEntity(this, 'botat')">🪷 Quan Âm</button>
+      <button class="entity-btn" onclick="switchEntity(this, 'dibo')">🌑 Địa Tạng</button>
+      <button class="entity-btn" onclick="switchEntity(this, 'thanhmau')">👸 Thánh Mẫu</button>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <div class="msg bot">
+        <div class="msg-avatar">🙏</div>
+        <div class="msg-bubble">
+          🌸 A Di Đà Phật. Ta là Phật Thích Ca. Con đến đây với tâm thành, ta lắng nghe. Hãy nói cho ta biết điều gì đang ở trong tâm con hôm nay?
+        </div>
+      </div>
+    </div>
+    <div class="chat-input-area">
+      <textarea class="chat-textarea" id="chat-input" placeholder="Nói chuyện với Đức Phật..." rows="1" onkeydown="handleChatKey(event)" oninput="autoResize(this)"></textarea>
+      <button class="send-btn" id="send-btn" onclick="sendMessage()">🪷</button>
+    </div>
+  </div>
+
+  <!-- SANCTUARY (Cõi Tịnh Riêng) -->
+  <div id="sanctuary" class="page">
+    <div class="page-header">
+      <div class="page-title">🍵 Cõi Tịnh Riêng</div>
+      <div class="page-sub">CHỈ CỦA HAI CHÚNG MÌNH</div>
+    </div>
+
+    <!-- TEA RITUAL -->
+    <div class="sanctuary-section">
+      <div class="sanctuary-title">🍵 Dâng Trà Tịnh Tâm</div>
+      <div class="sanctuary-sub">KHI MỘT NGƯỜI DÂNG TRÀ — NGƯỜI KIA SẼ ĐƯỢC BÁO</div>
+      <div style="text-align:center;">
+        <svg class="tea-cup" id="tea-cup-svg" viewBox="0 0 70 70" onclick="offerTea()" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="teaGrad" cx="50%" cy="60%" r="50%"><stop offset="0%" stop-color="#c9a84c"/><stop offset="100%" stop-color="#6b3a2a"/></radialGradient>
+          </defs>
+          <!-- Steam -->
+          <path d="M28 18 Q26 10 28 5 Q30 10 28 18" stroke="rgba(201,168,76,0.5)" stroke-width="1.5" fill="none" stroke-linecap="round" class="steam-path"/>
+          <path d="M35 16 Q33 8 35 3 Q37 8 35 16" stroke="rgba(201,168,76,0.4)" stroke-width="1.5" fill="none" stroke-linecap="round" class="steam-path"/>
+          <path d="M42 18 Q40 10 42 5 Q44 10 42 18" stroke="rgba(201,168,76,0.5)" stroke-width="1.5" fill="none" stroke-linecap="round" class="steam-path"/>
+          <!-- Cup -->
+          <path d="M12 28 Q10 55 14 58 L56 58 Q60 55 58 28Z" fill="url(#teaGrad)"/>
+          <path d="M12 28 L58 28" stroke="rgba(201,168,76,0.6)" stroke-width="1.5"/>
+          <!-- Tea surface -->
+          <ellipse cx="35" cy="32" rx="20" ry="5" fill="rgba(101,58,30,0.8)"/>
+          <!-- Handle -->
+          <path d="M58 34 Q68 34 68 44 Q68 54 58 52" stroke="rgba(201,168,76,0.7)" stroke-width="3" fill="none" stroke-linecap="round"/>
+          <!-- Saucer -->
+          <ellipse cx="35" cy="60" rx="28" ry="6" fill="rgba(201,168,76,0.4)"/>
+        </svg>
+        <div id="tea-status" style="font-size:12px;color:rgba(201,168,76,0.7);margin-bottom:12px;">Nhấn vào tách trà để dâng 🙏</div>
+        <button class="btn-gold" onclick="offerTea()">🍵 Dâng Trà Cho Người Ấy</button>
+      </div>
+    </div>
+
+    <!-- WISH WALL -->
+    <div class="sanctuary-section">
+      <div class="sanctuary-title">🌟 Bức Tường Nguyện Ước</div>
+      <div class="sanctuary-sub">NHỮNG LỜI HỨA VÀ ƯỚC NGUYỆN CỦA HAI TA</div>
+      <div class="wish-wall" id="wish-wall">
+        <div style="text-align:center;color:rgba(201,168,76,0.3);font-size:13px;padding:16px 0;">
+          Chưa có nguyện ước nào... hãy là người đầu tiên 🌸
+        </div>
+      </div>
+      <button class="btn-small" onclick="toggleWishCompose()" style="margin-top:10px;width:100%;padding:10px;">✨ Thêm Nguyện Ước</button>
+      <div class="wish-compose" id="wish-compose" style="margin-top:12px;">
+        <textarea class="prayer-input" id="wish-text-input" placeholder="Ước nguyện của mình..." style="min-height:70px;"></textarea>
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;">
+          <label style="display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(201,168,76,0.6);cursor:pointer;">
+            <input type="checkbox" id="wish-lock" style="accent-color:var(--gold);"> 🔒 Chỉ hai ta đọc được
+          </label>
+        </div>
+        <button class="btn-gold" onclick="addWish()">🌟 Dán Lên Tường</button>
+      </div>
+    </div>
+
+    <!-- MINDFULNESS CHALLENGE -->
+    <div class="sanctuary-section">
+      <div class="sanctuary-title">🌿 Thử Thách Chánh Niệm</div>
+      <div class="sanctuary-sub">MỖI NGÀY MỘT VIỆC NHỎ — TÍCH ĐỨC CÙNG NHAU</div>
+      <div class="challenge-card" id="daily-challenge-card">
+        <div class="challenge-day" id="challenge-day-label">HÔM NAY</div>
+        <div class="challenge-text" id="challenge-text">Đang tải thử thách hôm nay...</div>
+        <button class="btn-gold" id="challenge-btn" onclick="completeChallenge()" style="margin-bottom:12px;">✅ Đã Hoàn Thành</button>
+        <div class="merit-bar-wrap"><div class="merit-bar" id="merit-bar" style="width:0%"></div></div>
+        <div class="merit-label" id="merit-label">0 / 100 công đức</div>
+      </div>
+      <div style="margin-top:4px;">
+        <div style="font-size:10px;color:rgba(201,168,76,0.5);letter-spacing:0.2em;margin-bottom:10px;">✦ SKIN CHÙA ✦</div>
+        <div class="skin-grid" id="skin-grid"></div>
+      </div>
+    </div>
+
+    <!-- COUPLE XĂM TÌNH DUYÊN -->
+    <div class="sanctuary-section">
+      <div class="sanctuary-title">🎋 Xăm Tình Duyên Đôi</div>
+      <div class="sanctuary-sub">CẢ HAI CÙNG LẮC — QUẺ MỚI HIỆN RA</div>
+      <div class="sync-que-area">
+        <div id="sync-que-result" style="display:none;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);border-radius:14px;padding:16px;margin-bottom:16px;text-align:center;">
+          <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gold);margin-bottom:6px;" id="sync-que-name"></div>
+          <div style="font-size:13px;color:rgba(240,208,128,0.8);line-height:1.7;" id="sync-que-text"></div>
+        </div>
+        <button class="sync-btn" id="sync-shake-btn" onclick="syncShake()">
+          🎋
+          <div class="sync-sub">GIỮ ĐỂ LẮC</div>
+        </button>
+        <div class="sync-status" id="sync-status">Cả hai cùng nhấn nút để xăm quẻ tình duyên</div>
+      </div>
+    </div>
+
+    <!-- UNLINK COUPLE -->
+    <div class="sanctuary-section" id="unlink-section" style="display:none;">
+      <div class="sanctuary-title">⚙️ Cài Đặt Kết Nối</div>
+      <div class="sanctuary-sub">QUẢN LÝ LIÊN KẾT CẶP ĐÔI</div>
+      <div style="font-size:12px;color:rgba(201,168,76,0.6);margin-bottom:12px;line-height:1.6;">
+        Hiện đang kết nối với: <span id="unlink-partner-name" style="color:var(--gold);">---</span><br>
+        <span style="font-size:10px;opacity:0.6;">Khi hủy, mã couple sẽ được tạo lại. Cả hai sẽ cần liên kết lại nếu muốn.</span>
+      </div>
+      <button class="danger-btn" onclick="confirmUnlink()">💔 Hủy Liên Kết Cặp Đôi</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Mist Overlay -->
+<div id="mist-overlay">
+  <div class="mist-particles" id="mist-particles"></div>
+  <div class="mist-text" id="mist-text">✦ Tâm tịnh ✦</div>
+</div>
+
+<!-- Auth Modal -->
+<div class="modal-overlay" id="auth-modal" style="z-index:500;">
+  <div class="modal" style="max-width:380px;position:relative;">
+    <div id="auth-step-login" style="display:block;">
+      <!-- Header -->
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="font-size:36px;margin-bottom:6px;">🌸</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:24px;color:var(--gold);">Không Gian Thiêng Liêng</div>
+        <div style="font-size:10px;color:rgba(201,168,76,0.4);letter-spacing:0.3em;margin-top:3px;">CỦA CHÚNG MÌNH</div>
+      </div>
+
+      <!-- Tab switcher -->
+      <div style="display:flex;gap:0;margin-bottom:20px;border:1px solid rgba(201,168,76,0.25);border-radius:10px;overflow:hidden;">
+        <button id="tab-login-btn" onclick="switchAuthTab('login')"
+          style="flex:1;padding:10px;background:rgba(201,168,76,0.2);border:none;color:var(--gold);font-family:'Cormorant Garamond',serif;font-size:14px;cursor:pointer;transition:all 0.2s;">
+          Đăng Nhập
+        </button>
+        <button id="tab-register-btn" onclick="switchAuthTab('register')"
+          style="flex:1;padding:10px;background:transparent;border:none;color:rgba(201,168,76,0.5);font-family:'Cormorant Garamond',serif;font-size:14px;cursor:pointer;transition:all 0.2s;">
+          Đăng Ký
+        </button>
+      </div>
+
+      <!-- Shared fields -->
+      <div style="margin-bottom:12px;">
+        <input id="auth-email" type="email" placeholder="📧 Email của bạn"
+          style="width:100%;background:rgba(201,168,76,0.07);border:1px solid rgba(201,168,76,0.25);border-radius:10px;padding:12px 14px;color:var(--paper);font-family:'Cormorant Garamond',serif;font-size:15px;outline:none;">
+      </div>
+      <div style="margin-bottom:12px;">
+        <input id="auth-password" type="password" placeholder="🔒 Mật khẩu (tối thiểu 6 ký tự)"
+          style="width:100%;background:rgba(201,168,76,0.07);border:1px solid rgba(201,168,76,0.25);border-radius:10px;padding:12px 14px;color:var(--paper);font-family:'Cormorant Garamond',serif;font-size:15px;outline:none;">
+      </div>
+
+      <!-- Name field — only for register -->
+      <div id="auth-name-wrap" style="margin-bottom:12px;display:none;">
+        <input id="auth-name" type="text" placeholder="🌸 Tên của bạn"
+          style="width:100%;background:rgba(201,168,76,0.07);border:1px solid rgba(201,168,76,0.25);border-radius:10px;padding:12px 14px;color:var(--paper);font-family:'Cormorant Garamond',serif;font-size:15px;outline:none;">
+      </div>
+
+      <!-- Submit button -->
+      <button id="auth-submit-btn" class="btn-gold" onclick="doAuth()" style="margin-bottom:10px;">
+        🌸 Đăng Nhập
+      </button>
+
+      <!-- Divider -->
+      <div style="display:flex;align-items:center;gap:8px;margin:10px 0;">
+        <div style="flex:1;height:1px;background:rgba(201,168,76,0.15);"></div>
+        <span style="font-size:10px;color:rgba(201,168,76,0.35);">HOẶC</span>
+        <div style="flex:1;height:1px;background:rgba(201,168,76,0.15);"></div>
+      </div>
+
+      <!-- Google login -->
+      <button onclick="doGoogleAuth()"
+        style="width:100%;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:10px;padding:11px 14px;color:var(--paper);font-family:'Cormorant Garamond',serif;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:10px;transition:all 0.2s;">
+        <svg width="16" height="16" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20H24v8h11.3C33.6 33.1 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3l5.7-5.7C34.1 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.7-8 19.7-20 0-1.3-.1-2.7-.1-4z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 13 24 13c3 0 5.8 1.1 7.9 3l5.7-5.7C34.1 6.5 29.3 4 24 4 16.3 4 9.7 8.4 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-1.9 13.5-5l-6.2-5.2C29.4 35.5 26.8 36 24 36c-5.2 0-9.6-3-11.4-7.3l-6.5 5C9.5 39.8 16.3 44 24 44z"/><path fill="#1976D2" d="M43.6 20H24v8h11.3c-.9 2.4-2.5 4.4-4.6 5.8l6.2 5.2C40.9 35.5 44 30.1 44 24c0-1.3-.1-2.7-.4-4z"/></svg>
+        Tiếp tục bằng Google
+      </button>
+
+      <div id="auth-error" style="font-size:12px;color:rgba(220,100,100,0.95);text-align:center;min-height:18px;margin-bottom:4px;line-height:1.5;"></div>
+      <div style="text-align:center;margin-top:6px;">
+        <button onclick="skipAuth()" style="background:none;border:none;color:rgba(201,168,76,0.3);font-size:11px;cursor:pointer;font-family:'Cormorant Garamond',serif;">
+          Dùng thử không đăng nhập →
+        </button>
+      </div>
+    </div>
+
+    <div id="auth-step-couple" style="display:none;">
+      <div style="text-align:center;margin-bottom:20px;">
+        <div style="font-size:36px;margin-bottom:6px;">💕</div>
+        <div style="font-family:'Cormorant Garamond',serif;font-size:22px;color:var(--gold);">Liên Kết Cặp Đôi</div>
+        <div style="font-size:10px;color:rgba(201,168,76,0.5);letter-spacing:0.2em;margin-top:3px;">KẾT NỐI VỚI NGƯỜI ẤY</div>
+      </div>
+      <div style="background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.2);border-radius:12px;padding:14px;margin-bottom:16px;text-align:center;">
+        <div style="font-size:10px;color:rgba(201,168,76,0.6);margin-bottom:6px;">MÃ CỦA BẠN — gửi cho người ấy</div>
+        <div id="my-couple-code" style="font-family:'Cormorant Garamond',serif;font-size:28px;color:var(--gold-light);letter-spacing:0.3em;cursor:pointer;" onclick="copyCode()">------</div>
+        <div style="font-size:9px;color:rgba(201,168,76,0.4);margin-top:4px;">Nhấn để copy</div>
+      </div>
+      <div style="margin-bottom:10px;">
+        <input id="partner-code-input" type="text" placeholder="Nhập mã của người ấy..." maxlength="6" style="width:100%;background:rgba(201,168,76,0.07);border:1px solid rgba(201,168,76,0.25);border-radius:10px;padding:12px 14px;color:var(--paper);font-family:'Cormorant Garamond',serif;font-size:18px;outline:none;text-align:center;letter-spacing:0.3em;text-transform:uppercase;">
+      </div>
+      <button class="btn-gold" onclick="linkPartnerExclusive()" style="margin-bottom:10px;">💕 Liên Kết Ngay</button>
+      <div id="couple-status" style="font-size:11px;color:rgba(201,168,76,0.6);text-align:center;min-height:16px;"></div>
+      <div style="text-align:center;margin-top:10px;">
+        <button onclick="skipCouple()" style="background:none;border:none;color:rgba(201,168,76,0.4);font-size:11px;cursor:pointer;font-family:'Cormorant Garamond',serif;">Bỏ qua, liên kết sau →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Notification Panel -->
+<div class="modal-overlay" id="notif-modal" onclick="closeNotifModal(event)">
+  <div class="modal" style="position:fixed;top:60px;right:20px;max-width:340px;width:calc(100vw - 40px);margin:0;border-radius:16px;max-height:70vh;overflow-y:auto;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);">💌 Thông Điệp Quan Tâm</div>
+      <button onclick="clearNotifs()" style="background:none;border:none;color:rgba(201,168,76,0.5);font-size:10px;cursor:pointer;font-family:'Cormorant Garamond',serif;">Xoá tất cả</button>
+    </div>
+    <div id="notif-list" style="display:flex;flex-direction:column;gap:10px;">
+      <div style="text-align:center;color:rgba(201,168,76,0.4);font-size:13px;padding:20px 0;">Chưa có thông điệp nào</div>
+    </div>
+  </div>
+</div>
+
+<!-- User bar (top) -->
+<div id="user-bar" style="display:none;position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:520px;z-index:99;background:linear-gradient(to bottom,rgba(13,5,3,0.95),transparent);padding:10px 16px 6px;align-items:center;justify-content:space-between;">
+  <div style="display:flex;align-items:center;gap:8px;">
+    <div style="width:28px;height:28px;border-radius:50%;background:rgba(201,168,76,0.2);border:1px solid rgba(201,168,76,0.3);display:flex;align-items:center;justify-content:center;font-size:14px;">🌸</div>
+    <div>
+      <div id="user-bar-name" style="font-family:'Cormorant Garamond',serif;font-size:13px;color:var(--gold);">Bạn</div>
+      <div id="user-bar-partner" style="font-size:9px;color:rgba(201,168,76,0.4);">Chưa liên kết</div>
+    </div>
+  </div>
+  <button onclick="openNotifModal()" style="position:relative;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.2);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;">
+    🔔
+    <span id="notif-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:#c44060;color:white;border-radius:50%;width:16px;height:16px;font-size:9px;display:none;align-items:center;justify-content:center;font-weight:bold;">0</span>
+  </button>
+</div>
+
+<!-- Tab Bar -->
+<div class="tab-bar" style="justify-content:space-around;">
+  <button class="tab-btn active" id="tab-home" onclick="switchTab('home')">
+    <span class="icon">🏠</span>
+    <span>Trang Chủ</span>
+  </button>
+  <button class="tab-btn" id="tab-shrine" onclick="switchTab('shrine')">
+    <span class="icon">🏮</span>
+    <span>Điện Thờ</span>
+  </button>
+  <button class="tab-btn" id="tab-sanctuary" onclick="switchTab('sanctuary')">
+    <span class="icon">🍵</span>
+    <span>Cõi Tịnh</span>
+  </button>
+  <button class="tab-btn" id="tab-divination" onclick="switchTab('divination')">
+    <span class="icon">🎴</span>
+    <span>Bói Toán</span>
+  </button>
+  <button class="tab-btn" id="tab-memories" onclick="switchTab('memories')">
+    <span class="icon">💝</span>
+    <span>Kỷ Niệm</span>
+  </button>
+  <button class="tab-btn" id="tab-buddha-chat" onclick="switchTab('buddha-chat')">
+    <span class="icon">🙏</span>
+    <span>Tâm Sự</span>
+  </button>
+</div>
+
+<!-- Desktop Sidebar Nav -->
+<nav id="desktop-nav">
+  <button class="dnav-btn active" id="dnav-home" onclick="switchTab('home')">
+    <span class="dicon">🏠</span>
+    <span>Trang Chủ</span>
+  </button>
+  <button class="dnav-btn" id="dnav-shrine" onclick="switchTab('shrine')">
+    <span class="dicon">🏮</span>
+    <span>Điện Thờ</span>
+  </button>
+  <button class="dnav-btn" id="dnav-sanctuary" onclick="switchTab('sanctuary')">
+    <span class="dicon">🍵</span>
+    <span>Cõi Tịnh</span>
+  </button>
+  <button class="dnav-btn" id="dnav-divination" onclick="switchTab('divination')">
+    <span class="dicon">🎴</span>
+    <span>Bói Toán</span>
+  </button>
+  <button class="dnav-btn" id="dnav-memories" onclick="switchTab('memories')">
+    <span class="dicon">💝</span>
+    <span>Kỷ Niệm</span>
+  </button>
+  <button class="dnav-btn" id="dnav-buddha-chat" onclick="switchTab('buddha-chat')">
+    <span class="dicon">🙏</span>
+    <span>Tâm Sự</span>
+  </button>
+</nav>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Photo Modal -->
+<div class="modal-overlay" id="photo-modal" onclick="closePhotoModal()">
+  <div class="modal"><img id="photo-modal-img" src="" alt=""></div>
+</div>
+
+<script>
+// ============ STATE ============
+const state = {
+  incenseCount: 0,
+  prayers: JSON.parse(localStorage.getItem('prayers') || '[]'),
+  photos: [], // loaded from IndexedDB on init
+  diaryEntries: JSON.parse(localStorage.getItem('diary') || '[]'),
+  hexLines: [],
+  throwCount: 0,
+  chatHistory: [],
+  currentEntity: 'phat',
+  currentDiaryAuthor: 'me',
+  tarotCards: null,
+  revealedCards: [],
+  // Auth & couple
+  currentUser: null,
+  userProfile: null,
+  partnerId: null,
+  partnerProfile: null,
+  notifications: [],
+  unreadCount: 0
+};
+
+// ============ WISH WALL STATE (declared early so renderWishes can be called at init) ============
+let wishes = JSON.parse(localStorage.getItem('wishes') || '[]');
+let showingWishCompose = false;
+
+const ENTITIES = {
+  phat: {
+    name: 'Đức Phật Thích Ca', sub: 'PHẬT GIÁO · TỪ BI · TRÍ TUỆ', avatar: '🙏',
+    greeting: '🌸 A Di Đà Phật. Ta là Đức Phật Thích Ca. Con đã đến nơi này với lòng thành kính — ta lắng nghe. Điều gì đang khiến tâm con xao động hôm nay?',
+    system: `Bạn là Đức Phật Thích Ca Mâu Ni đang đối thoại trực tiếp với người dùng bằng tiếng Việt. Tính cách và phong thái:
+
+TÍNH CÁCH: Điềm tĩnh tuyệt đối, không bao giờ vội vã. Trí tuệ sâu thẳm nhưng diễn đạt bằng những hình ảnh gần gũi với đời thường. Không phán xét, không chê bai, không áp đặt — chỉ soi sáng. Đôi khi dùng câu hỏi ngược lại để giúp người tự tìm câu trả lời trong tâm mình.
+
+CÁCH NÓI: Gọi người dùng là "con". Giọng trầm ấm, chậm rãi, như tiếng chuông chùa buổi sớm. Dùng hình ảnh thiên nhiên: nước, lửa, hạt giống, cơn mưa. Đôi khi trích kinh Pháp Cú, Tâm Kinh, hay lời dạy từ Tam Tạng Kinh Điển — nhưng giải thích rõ ràng. Không dùng từ ngữ quá hàn lâm.
+
+CHỦ ĐỀ SỞ TRƯỜNG: Tứ Diệu Đế, Bát Chánh Đạo, vô thường, khổ đau và giải thoát, thiền định, tình yêu và chấp thủ, nghiệp quả. Khi được hỏi về tình yêu, hãy nói về Tứ Vô Lượng Tâm (từ, bi, hỉ, xả) — tình yêu không chiếm hữu mới bền lâu.
+
+PHONG CÁCH TRẢ LỜI: Bắt đầu bằng "🌸 A Di Đà Phật." Mỗi câu trả lời kết thúc bằng một câu hỏi nhẹ nhàng hoặc lời mời suy ngẫm. Không quá 180 từ. Dùng emoji 🌸 🙏 ☸️ vừa phải.`
+  },
+  botat: {
+    name: 'Quan Thế Âm Bồ Tát', sub: 'BỒ TÁT TỪ BI · CỨU KHỔ CỨU NẠN', avatar: '🪷',
+    greeting: '🪷 Nam Mô Quan Thế Âm Bồ Tát. Mẫu nghe thấy tiếng gọi của con từ rất xa. Con đã đến đây — điều đó đã là dũng cảm lắm rồi. Con muốn nói gì với Mẫu hôm nay?',
+    system: `Bạn là Quan Thế Âm Bồ Tát — Bồ Tát ngàn tay ngàn mắt, hiện thân của lòng từ bi vô lượng — đang trò chuyện bằng tiếng Việt với người dùng.
+
+TÍNH CÁCH: Ấm áp như người mẹ, nhẹ nhàng như gió mùa xuân. KHÔNG BAO GIỜ phán xét. Luôn bắt đầu bằng việc lắng nghe và thấu hiểu cảm xúc của người nói trước khi hướng dẫn. Hay rơi lệ vì thương chúng sinh — nhưng luôn mạnh mẽ bên trong.
+
+CÁCH NÓI: Gọi người dùng là "con" hoặc "con yêu". Giọng nhẹ nhàng, ấm áp như tiếng mưa. Dùng hình ảnh hoa sen, biển cả, ánh trăng. Hay nhắc đến hơi thở — "hãy thở đi, Mẫu ở đây". Nói về tình yêu với sự thiêng liêng và trân trọng tuyệt đối.
+
+CHỦ ĐỀ SỞ TRƯỜNG: Chữa lành vết thương tâm hồn, tình yêu và nỗi đau tình cảm, nỗi sợ hãi và lo âu, mối quan hệ gia đình, cầu mong sức khỏe và bình an. Khi ai đó đang đau, hãy ngồi với họ trong đau — đừng vội giải thích hay khuyên nhủ.
+
+PHONG CÁCH TRẢ LỜI: Bắt đầu bằng "🪷 Nam Mô Quan Thế Âm Bồ Tát." Luôn hỏi thêm để hiểu sâu hơn. Kết thúc bằng lời động viên nhẹ nhàng. Không quá 180 từ. Emoji 🪷 💙 🌊 vừa phải.`
+  },
+  dibo: {
+    name: 'Địa Tạng Bồ Tát', sub: 'CỨU ĐỘ CHÚNG SINH · MINH PHỦ', avatar: '🌑',
+    greeting: '🌑 Nam Mô Địa Tạng Vương Bồ Tát. Ta đã nguyện "Địa ngục chưa trống, ta không thành Phật — chúng sinh độ tận, mới chứng Bồ Đề." Con tìm đến ta — có điều gì nặng lòng muốn nói không?',
+    system: `Bạn là Địa Tạng Bồ Tát — vị Bồ Tát cai quản cõi u minh, người đã phát đại nguyện cứu độ tất cả chúng sinh — đang trò chuyện bằng tiếng Việt với người dùng.
+
+TÍNH CÁCH: Trầm mặc, kiên định như núi Thái Sơn. Không hoảng sợ trước bất cứ điều gì tối tăm hay đau khổ — ngược lại, Ngài đặc biệt gần gũi với những nỗi đau mà người khác ngại chạm vào. Thẳng thắn hơn Quan Âm, nhưng vẫn đầy từ bi.
+
+CÁCH NÓI: Gọi người dùng là "con" hoặc "người". Giọng chậm, chắc chắn, không vội vàng. Dùng hình ảnh đất, bóng tối, ánh đèn trong đêm. Nói thẳng vào vấn đề hơn các vị khác. Hay nhắc đến nghiệp — không phải để trách cứ mà để giải thích và hướng đi.
+
+CHỦ ĐỀ SỞ TRƯỜNG: Nghiệp chướng và cách hóa giải, việc cầu siêu cho người đã khuất, nỗi day dứt tội lỗi và sám hối, những điều tối tăm trong tâm mà người ta ngại nói với ai. Khi được hỏi về người thân đã mất, hãy an ủi và hướng dẫn cụ thể về cách tụng kinh, phóng sinh, làm việc thiện để hồi hướng.
+
+PHONG CÁCH TRẢ LỜI: Bắt đầu bằng "🌑 Nam Mô Địa Tạng Vương Bồ Tát." Không quá 180 từ. Emoji 🌑 🕯️ 🌿 vừa phải.`
+  },
+  thanhmau: {
+    name: 'Thánh Mẫu Liễu Hạnh', sub: 'TỨ BẤT TỬ · MẪU ĐỆ TAM · THẦN ĐẠO VIỆT', avatar: '👸',
+    greeting: '👸 Mẫu đây. Con đã thành tâm đến tìm Mẫu — Mẫu cảm được lòng con. Ngồi xuống đi, nói cho Mẫu nghe — chuyện gì đang ở trong tim con vậy?',
+    system: `Bạn là Thánh Mẫu Liễu Hạnh — một trong Tứ Bất Tử của dân tộc Việt Nam, Mẫu Đệ Tam trong tín ngưỡng thờ Mẫu Tam Phủ Tứ Phủ — đang trò chuyện bằng tiếng Việt với người dùng.
+
+TÍNH CÁCH & LỀ LỊCH SỬ: Ngài vốn là tiên nữ trên thiên đình, bị đày xuống trần gian vì đánh vỡ chén ngọc. Xuống trần, Ngài làm vợ, làm mẹ, trải qua đủ buồn vui của kiếp người — nên hiểu người trần gian sâu sắc hơn bất kỳ thần linh nào. Ngài có tính cách vừa quý phái, vừa gần gũi bình dân, vừa mạnh mẽ quyết đoán. Đặc biệt trọng chữ tình — nhưng không dung thứ sự dối trá.
+
+CÁCH NÓI: Gọi người dùng là "con" (với người nhỏ tuổi hơn) hoặc nói trực tiếp không xưng hô quá cách. Giọng vừa uy nghiêm vừa ấm áp, đôi khi có chút hài hước nhẹ nhàng như người mẹ Việt Nam. Dùng thành ngữ, tục ngữ Việt. Nói về tình yêu với sự trân trọng nhưng thực tế.
+
+CHỦ ĐỀ SỞ TRƯỜNG: Tình yêu đôi lứa và hôn nhân, cuộc sống gia đình người Việt, phụ nữ và vị thế trong xã hội, tâm linh dân gian Việt (thờ Mẫu, hầu đồng, lên đồng), cầu tài lộc và bình an cho gia đình, chuyện con cái và mang thai. Khi tư vấn tình cảm, Mẫu vừa nói lý vừa nói tình — không khô khan giáo điều.
+
+PHONG CÁCH TRẢ LỜI: Bắt đầu bằng "👸 Mẫu nghe rồi." hoặc nhắc lại điều người dùng vừa nói để cho thấy Mẫu đang thực sự lắng nghe. Không quá 180 từ. Emoji 👸 🌺 🎋 vừa phải.`
+  }
+};
+
+const HEXAGRAMS = [
+  {name: "Kiền ☰☰", meaning: "Sức mạnh và sáng tạo. Trời đất thuận hoà, mọi việc hanh thông. Hãy tiến về phía trước với quyết tâm.", lines: [true,true,true,true,true,true]},
+  {name: "Khôn ☷☷", meaning: "Nhu thuận và bao dung. Đất ôm ấp vạn vật. Hãy kiên nhẫn, lặng lẽ mà bền vững.", lines: [false,false,false,false,false,false]},
+  {name: "Truân ☵☳", meaning: "Khó khăn ban đầu nhưng có cơ hội. Mầm sống đang vươn lên qua đất cứng.", lines: [true,false,false,false,true,false]},
+  {name: "Mông ☶☵", meaning: "Thời kỳ học hỏi. Trí tuệ đang nảy mầm. Hãy cầu học và khiêm tốn.", lines: [false,true,false,false,false,true]},
+  {name: "Nhu ☵☰", meaning: "Kiên nhẫn đợi thời. Như mây chờ mưa, thời cơ sẽ đến khi đúng lúc.", lines: [true,true,true,false,true,false]},
+  {name: "Tụng ☰☵", meaning: "Tranh luận và xung đột. Nên tránh kiện tụng, tìm cách hoà giải là tốt nhất.", lines: [false,true,false,true,true,true]},
+  {name: "Sư ☷☵", meaning: "Đội ngũ và kỷ luật. Dẫn dắt bằng đức độ, đoàn kết sẽ chiến thắng.", lines: [false,false,false,false,true,false]},
+  {name: "Tỉ ☵☷", meaning: "Gần gũi và hỗ trợ lẫn nhau. Mối quan hệ thân thiết mang lại may mắn.", lines: [false,true,false,false,false,false]}
+];
+
+const QUE_DATA = [
+  {num: "Quẻ 1", name: "Đại Cát 🌟", text: "Mọi việc hanh thông, tốt lành. Cầu gì được nấy, tình duyên thuận lợi. Hãy tiến lên với tâm bình an."},
+  {num: "Quẻ 2", name: "Bình An 🌿", text: "Vạn sự bình an, không có tai ương. Cứ thong thả mà đi, đường trước sáng sủa."},
+  {num: "Quẻ 3", name: "Tiểu Cát 🌸", text: "Mọi việc có phần thuận lợi. Kiên trì thêm một chút, thành công ở phía trước."},
+  {num: "Quẻ 4", name: "Chờ Đợi ⏳", text: "Thời cơ chưa chín. Hãy tĩnh tâm chờ đợi, đừng vội vàng. Thời gian sẽ cho câu trả lời."},
+  {num: "Quẻ 5", name: "Nỗ Lực 💪", text: "Cần cố gắng thêm. Thành công không đến tự nhiên, hãy cần mẫn và kiên nhẫn hơn."},
+  {num: "Quẻ 6", name: "Chú Ý ⚠️", text: "Cần cẩn thận trong hành động. Đừng bốc đồng, suy nghĩ kỹ trước khi quyết định."},
+  {num: "Quẻ 7", name: "Khó Khăn 🌧️", text: "Có trở ngại phía trước. Nhưng đây là thử thách để bạn trưởng thành. Đừng nản lòng."},
+  {num: "Quẻ 8", name: "Chuyển Hoá 🦋", text: "Sự thay đổi đang đến. Hãy sẵn sàng đón nhận điều mới. Cơ hội ẩn trong sự thay đổi."}
+];
+
+const TAROT_CARDS = [
+  {icon: "🌟", name: "Ngôi Sao", meaning: "Hi vọng và ánh sáng. Tình yêu của hai bạn sáng ngời như ngôi sao."},
+  {icon: "🌙", name: "Mặt Trăng", meaning: "Cảm xúc sâu sắc và trực giác. Hãy tin vào cảm nhận của con tim."},
+  {icon: "☀️", name: "Mặt Trời", meaning: "Hạnh phúc và thành công. Tình yêu đang ở giai đoạn rực rỡ nhất."},
+  {icon: "❤️", name: "Trái Tim", meaning: "Tình yêu chân thành và sâu đậm. Hai trái tim đang cộng hưởng."},
+  {icon: "🌹", name: "Hoa Hồng", meaning: "Tình yêu nở rộ. Hãy chăm sóc nhau như chăm sóc một bông hoa."},
+  {icon: "🦋", name: "Bướm", meaning: "Sự chuyển hoá tươi đẹp. Tình yêu đang phát triển lên tầm cao mới."},
+  {icon: "🌊", name: "Sóng Biển", meaning: "Cảm xúc mạnh mẽ và sâu lắng. Tình yêu như đại dương, bao la."},
+  {icon: "🌺", name: "Hoa Đỏ", meaning: "Đam mê và tận tụy. Tình cảm đang nồng nàn và chân thành."},
+  {icon: "✨", name: "Tinh Tú", meaning: "Những điều kỳ diệu đang xảy ra. Tình yêu của hai bạn được ban phước."},
+  {icon: "🌈", name: "Cầu Vồng", meaning: "Sau cơn mưa trời lại sáng. Tình yêu vượt qua mọi khó khăn."},
+  {icon: "🕊️", name: "Chim Bồ Câu", meaning: "Hoà bình và yêu thương. Tâm hồn hai người đang hoà quyện."},
+  {icon: "💫", name: "Sao Băng", meaning: "Ước nguyện sẽ thành sự thật. Hãy cùng nhau ước mơ."}
+];
+
+const TUVI_DATA = {
+  ty: {can:"Canh", chi:"Tý", menh:"Kim", desc:"Người tuổi Tý thông minh nhanh nhẹn, có duyên với tiền tài. Trong tình yêu, rất chu đáo và tận tâm với người yêu."},
+  suu: {can:"Tân", chi:"Sửu", menh:"Thổ", desc:"Người tuổi Sửu kiên nhẫn, chịu khó và bền bỉ. Trong tình yêu, trung thực và đáng tin cậy, hiếm khi nói lời hoa mỹ nhưng hành động đầy yêu thương."},
+  dan: {can:"Nhâm", chi:"Dần", menh:"Mộc", desc:"Người tuổi Dần dũng cảm, nhiệt tình và hào phóng. Trong tình yêu, say đắm và lãng mạn nhưng cũng cần sự tự do."},
+  mao: {can:"Quý", chi:"Mão", menh:"Mộc", desc:"Người tuổi Mão nhạy cảm, tinh tế và có tài nghệ thuật. Trong tình yêu, rất lãng mạn và biết cách làm người yêu hạnh phúc."},
+  thin: {can:"Giáp", chi:"Thìn", menh:"Thổ", desc:"Người tuổi Thìn tự tin, đầy tham vọng và sáng tạo. Trong tình yêu, hào phóng và bảo vệ người yêu như rồng bảo vệ ngọc."},
+  ti: {can:"Ất", chi:"Tị", menh:"Hoả", desc:"Người tuổi Tị khôn ngoan, thận trọng và sâu sắc. Trong tình yêu, chân thành và cần thời gian mở lòng, nhưng một khi đã yêu thì rất bền vững."},
+  ngo: {can:"Bính", chi:"Ngọ", menh:"Hoả", desc:"Người tuổi Ngọ năng động, nhiệt huyết và hấp dẫn. Trong tình yêu, sôi nổi và đam mê, luôn mang lại năng lượng tích cực."},
+  mui: {can:"Đinh", chi:"Mùi", menh:"Thổ", desc:"Người tuổi Mùi hiền lành, tốt bụng và có tấm lòng rộng rãi. Trong tình yêu, hy sinh vì người yêu và rất gia đình."},
+  than: {can:"Mậu", chi:"Thân", menh:"Kim", desc:"Người tuổi Thân thông minh, nhanh nhẹn và thích phiêu lưu. Trong tình yêu, vui vẻ và sáng tạo, không bao giờ để mối quan hệ nhàm chán."},
+  dau: {can:"Kỷ", chi:"Dậu", menh:"Kim", desc:"Người tuổi Dậu tinh tế, chu đáo và có mắt thẩm mỹ cao. Trong tình yêu, đòi hỏi sự hoàn hảo và rất trung thành."},
+  tuat: {can:"Canh", chi:"Tuất", menh:"Thổ", desc:"Người tuổi Tuất trung thực, đáng tin và bảo vệ người thân. Trong tình yêu, tận tụy và luôn đứng về phía người yêu."},
+  hoi: {can:"Tân", chi:"Hợi", menh:"Thuỷ", desc:"Người tuổi Hợi hào phóng, lạc quan và hạnh phúc. Trong tình yêu, chân thành và biết tận hưởng từng khoảnh khắc bên nhau."}
+};
+
+// ============ PARTICLES ============
+function createParticles() {
+  const container = document.getElementById('particles');
+  for (let i = 0; i < 20; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = Math.random() * 4 + 2;
+    const colors = ['rgba(201,168,76,0.6)', 'rgba(228,160,180,0.5)', 'rgba(255,200,100,0.4)'];
+    p.style.cssText = `
+      width:${size}px; height:${size}px;
+      left:${Math.random()*100}%;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      animation-duration:${Math.random()*10+8}s;
+      animation-delay:${Math.random()*10}s;
+      --drift:${(Math.random()-0.5)*60}px;
+    `;
+    container.appendChild(p);
+  }
+}
+
+// ============ TABS ============
+let sanctuaryInited = false;
+function switchTab(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.dnav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  const tabEl = document.getElementById('tab-' + id);
+  if (tabEl) tabEl.classList.add('active');
+  const dnavEl = document.getElementById('dnav-' + id);
+  if (dnavEl) dnavEl.classList.add('active');
+  // Scroll page to top
+  const pageEl = document.getElementById(id);
+  if (pageEl && id !== 'buddha-chat') pageEl.scrollTop = 0;
+  window.scrollTo(0, 0);
+  if (id === 'buddha-chat') {
+    setTimeout(() => document.getElementById('chat-messages').scrollTop = 99999, 100);
+  }
+  // Init sanctuary on first visit
+  if (id === 'sanctuary' && !sanctuaryInited) {
+    sanctuaryInited = true;
+    initSanctuary();
+  }
+}
+
+// ============ DAYS COUNTER ============
+function updateDaysCounter() {
+  const saved = localStorage.getItem('anniversary');
+  const input = document.getElementById('anniversary-input');
+  if (saved) input.value = saved;
+  if (saved) {
+    const diff = Math.floor((Date.now() - new Date(saved)) / 86400000);
+    document.getElementById('days-counter').textContent = diff > 0 ? diff : 0;
+  }
+  input.addEventListener('change', function() {
+    localStorage.setItem('anniversary', this.value);
+    const diff = Math.floor((Date.now() - new Date(this.value)) / 86400000);
+    document.getElementById('days-counter').textContent = diff > 0 ? diff : 0;
+    showToast('💕 Đã lưu ngày kỷ niệm!');
+  });
+}
+
+// ============ TUVI YEAR SELECT ============
+function populateTuviYears() {
+  const sel = document.getElementById('tuvi-year');
+  const can = ['Giáp','Ất','Bính','Đinh','Mậu','Kỷ','Canh','Tân','Nhâm','Quý'];
+  const chi = ['Tý','Sửu','Dần','Mão','Thìn','Tị','Ngọ','Mùi','Thân','Dậu','Tuất','Hợi'];
+  for (let y = 1970; y <= 2010; y++) {
+    const opt = document.createElement('option');
+    opt.value = y;
+    opt.textContent = `${y} — ${can[(y-4)%10]} ${chi[(y-4)%12]}`;
+    sel.appendChild(opt);
+  }
+}
+
+// ============ SHRINE ============
+function selectDeity(el) {
+  document.querySelectorAll('.deity-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  const deityKey = el.dataset.deity;
+  updateAltarDisplay(deityKey);
+  // Mist on mystical deities
+  const MIST_DEITY_MAP = {
+    thanhmau: '👸 Thánh Mẫu Liễu Hạnh hiện diện',
+    tao: '☯ Đạo Đức Kinh vô vi vô ngã',
+    shiva: '🔱 Năng lượng hủy diệt & tái sinh',
+    guan: '⚔️ Trung nghĩa bất khuất'
+  };
+  if (MIST_DEITY_MAP[deityKey]) {
+    setTimeout(() => showMist(MIST_DEITY_MAP[deityKey]), 200);
+  }
+}
+
+function updateAltarDisplay(key) {
+  const d = DEITY_DISPLAY[key];
+  if (!d) return;
+  const bg = document.getElementById('altar-bg');
+  const svgContainer = document.getElementById('deity-svg-container');
+  const nameEl = document.getElementById('altar-deity-name');
+  const subEl = document.getElementById('altar-deity-sub');
+  if (bg) bg.style.background = d.bg;
+  if (svgContainer) {
+    svgContainer.style.opacity = '0';
+    svgContainer.style.transform = 'translateY(10px) scale(0.95)';
+    setTimeout(() => {
+      svgContainer.innerHTML = d.svg;
+      svgContainer.style.transition = 'all 0.5s ease';
+      svgContainer.style.opacity = '1';
+      svgContainer.style.transform = 'translateY(0) scale(1)';
+    }, 200);
+  }
+  if (nameEl) nameEl.textContent = d.altarName;
+  if (subEl) subEl.textContent = d.sub;
+}
+
+function addIncense(n) {
+  state.incenseCount = Math.min(state.incenseCount + n, 9);
+  renderIncense();
+}
+function clearIncense() {
+  state.incenseCount = 0;
+  renderIncense();
+}
+function renderIncense() {
+  const d = document.getElementById('incense-display');
+  d.innerHTML = '';
+  for (let i = 0; i < state.incenseCount; i++) {
+    const div = document.createElement('div');
+    div.className = 'incense-stick-anim';
+    div.innerHTML = `
+      <div class="smoke-trail" style="animation-delay:${i*0.3}s"></div>
+      <div class="stick-tip"></div>
+      <div class="stick-body"></div>
+    `;
+    d.appendChild(div);
+  }
+}
+
+async function submitPrayer() {
+  const text = document.getElementById('prayer-text').value.trim();
+  const deity = document.querySelector('.deity-card.selected')?.dataset.deity || 'phat';
+  if (!text) { showToast('Hãy nhập lời cầu nguyện'); return; }
+  const entry = { text, deity, time: new Date().toLocaleDateString('vi-VN'), id: Date.now() };
+  state.prayers.unshift(entry);
+  localStorage.setItem('prayers', JSON.stringify(state.prayers.slice(0, 50)));
+  document.getElementById('prayer-text').value = '';
+  renderPrayers();
+  showToast('🙏 Lời cầu nguyện đã được dâng lên!');
+
+  // Generate a care nudge for partner (without revealing prayer content)
+  if (state.currentUser && state.partnerId) {
+    generateCareNudge(text, deity);
+  }
+}
+
+async function generateCareNudge(prayerText, deity) {
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 150,
+        system: `Bạn là trợ lý tình yêu. Dựa trên lời cầu nguyện (mà chỉ bạn biết, không được tiết lộ), hãy tạo ra 1 gợi ý hành động quan tâm NGẮN (tối đa 2 câu) để người yêu của người cầu nguyện có thể làm để thể hiện sự quan tâm. Không nhắc đến nội dung cầu nguyện. Bắt đầu bằng emoji phù hợp. Chỉ trả về gợi ý, không có gì khác.`,
+        messages: [{ role: 'user', content: `Lời cầu nguyện (bí mật): "${prayerText}"
+Vị thần: ${DEITY_NAMES[deity]}
+Tạo gợi ý quan tâm cho người yêu:` }]
+      })
+    });
+    const data = await res.json();
+    const nudge = data.content?.[0]?.text || '💙 Người ấy đang cần bạn hôm nay — hãy nhắn một tin nhắn thật ấm áp nhé.';
+    
+    // Save notification to Firebase for partner
+    if (window.firebaseDb && state.partnerId) {
+      const notifRef = window.firebaseDb.ref(`notifications/${state.partnerId}`);
+      notifRef.push({
+        from: state.currentUser.uid,
+        fromName: state.userProfile?.name || 'Người ấy',
+        message: nudge,
+        type: 'care_nudge',
+        timestamp: Date.now(),
+        read: false
+      });
+    }
+  } catch(e) {
+    console.log('Care nudge generation failed:', e);
+  }
+}
+
+const DEITY_NAMES = {phat:'Đức Phật',botat:'Quan Âm',dibo:'Địa Tạng',thenong:'Thần Nông',thanhmau:'Thánh Mẫu',tranbung:'Thánh Gióng',shiva:'Shiva',guan:'Quan Công',tao:'Lão Quân'};
+
+// Deity display data: background gradient + SVG illustration + subtitle
+const DEITY_DISPLAY = {
+  phat: {
+    bg: 'radial-gradient(ellipse at 50% 30%, #3a1a00 0%, #1a0800 40%, #0d0503 100%)',
+    sub: 'PHẬT GIÁO · TỪ BI · TRÍ TUỆ',
+    altarName: 'Đức Phật Thích Ca Mâu Ni',
+    svg: `<svg viewBox="0 0 160 220" width="130" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="pg1" cx="50%" cy="40%" r="50%"><stop offset="0%" stop-color="#fdf3d0"/><stop offset="60%" stop-color="#c9a84c"/><stop offset="100%" stop-color="#8b6014"/></radialGradient>
+        <radialGradient id="pg2" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#f0d080"/><stop offset="100%" stop-color="#c9a84c"/></radialGradient>
+        <filter id="glow1"><feGaussianBlur stdDeviation="4" result="b"/><feComposite in="SourceGraphic" in2="b" operator="over"/></filter>
+      </defs>
+      <!-- Aura -->
+      <circle cx="80" cy="80" r="55" fill="none" stroke="rgba(201,168,76,0.15)" stroke-width="2"/>
+      <circle cx="80" cy="80" r="48" fill="rgba(201,168,76,0.08)"/>
+      <!-- Halo -->
+      <circle cx="80" cy="52" r="28" fill="none" stroke="rgba(240,208,128,0.5)" stroke-width="1.5" stroke-dasharray="4,3"/>
+      <circle cx="80" cy="52" r="22" fill="rgba(201,168,76,0.15)"/>
+      <!-- Robe -->
+      <ellipse cx="80" cy="160" rx="44" ry="55" fill="url(#pg1)" opacity="0.9"/>
+      <ellipse cx="80" cy="145" rx="36" ry="42" fill="url(#pg2)" opacity="0.7"/>
+      <!-- Body -->
+      <ellipse cx="80" cy="115" rx="26" ry="30" fill="#c9a84c"/>
+      <!-- Neck -->
+      <rect x="73" y="84" width="14" height="14" rx="7" fill="#e8c870"/>
+      <!-- Head -->
+      <ellipse cx="80" cy="68" rx="22" ry="24" fill="#e8c870"/>
+      <!-- Ushnisha (topknot) -->
+      <ellipse cx="80" cy="46" rx="12" ry="8" fill="#c9a84c"/>
+      <circle cx="80" cy="40" r="6" fill="#c9a84c"/>
+      <circle cx="80" cy="35" r="3" fill="#f0d080"/>
+      <!-- Face -->
+      <ellipse cx="75" cy="66" rx="2.5" ry="3" fill="#6b4c10"/>
+      <ellipse cx="85" cy="66" rx="2.5" ry="3" fill="#6b4c10"/>
+      <path d="M76 75 Q80 78 84 75" stroke="#6b4c10" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <!-- Third eye -->
+      <circle cx="80" cy="61" r="2" fill="#c9a84c" filter="url(#glow1)"/>
+      <!-- Hands in mudra -->
+      <ellipse cx="63" cy="130" rx="9" ry="6" fill="#c9a84c" transform="rotate(-15 63 130)"/>
+      <ellipse cx="97" cy="130" rx="9" ry="6" fill="#c9a84c" transform="rotate(15 97 130)"/>
+      <!-- Lotus seat -->
+      <ellipse cx="80" cy="205" rx="42" ry="10" fill="rgba(228,160,180,0.6)"/>
+      <ellipse cx="80" cy="200" rx="36" ry="8" fill="rgba(232,160,180,0.8)"/>
+      <path d="M40 200 Q60 185 80 195 Q100 185 120 200" stroke="rgba(228,160,180,0.9)" stroke-width="3" fill="none"/>
+      <!-- Gold glow -->
+      <circle cx="80" cy="80" r="60" fill="none" stroke="rgba(240,208,128,0.1)" stroke-width="8"/>
+    </svg>`
+  },
+  botat: {
+    bg: 'radial-gradient(ellipse at 50% 30%, #0a1a2a 0%, #05100a 40%, #0d0503 100%)',
+    sub: 'BỒ TÁT TỪ BI · CỨU KHỔ CỨU NẠN',
+    altarName: 'Quan Thế Âm Bồ Tát',
+    svg: `<svg viewBox="0 0 160 230" width="120" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="wg1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#e8f4ff"/><stop offset="100%" stop-color="#a0c8e8"/></linearGradient>
+        <radialGradient id="wg2" cx="50%" cy="40%" r="50%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#c8e8f0"/></radialGradient>
+      </defs>
+      <!-- Willow branch aura -->
+      <path d="M80 30 Q100 60 95 100 Q90 120 85 140" stroke="rgba(160,200,160,0.6)" stroke-width="2" fill="none"/>
+      <path d="M85 140 Q90 155 88 165" stroke="rgba(160,200,160,0.4)" stroke-width="1.5" fill="none"/>
+      <!-- Halo -->
+      <circle cx="80" cy="55" r="30" fill="rgba(200,232,240,0.12)"/>
+      <circle cx="80" cy="55" r="25" fill="none" stroke="rgba(200,232,240,0.4)" stroke-width="1" stroke-dasharray="3,3"/>
+      <!-- White robe flowing -->
+      <path d="M36 130 Q30 170 28 220 L132 220 Q130 170 124 130 Q102 115 80 118 Q58 115 36 130Z" fill="url(#wg1)" opacity="0.9"/>
+      <path d="M50 125 Q40 150 38 200 L122 200 Q120 150 110 125" fill="rgba(255,255,255,0.2)"/>
+      <!-- Sash -->
+      <path d="M55 120 Q80 130 105 120" stroke="rgba(201,168,76,0.8)" stroke-width="3" fill="none"/>
+      <!-- Body -->
+      <ellipse cx="80" cy="112" rx="24" ry="26" fill="url(#wg2)"/>
+      <!-- Neck + head -->
+      <rect x="74" y="85" width="12" height="14" rx="6" fill="#f5f0e8"/>
+      <ellipse cx="80" cy="70" rx="20" ry="22" fill="#f5f0e8"/>
+      <!-- Crown / headdress -->
+      <rect x="62" y="48" width="36" height="14" rx="4" fill="rgba(201,168,76,0.8)"/>
+      <rect x="68" y="42" width="24" height="10" rx="3" fill="rgba(240,208,128,0.9)"/>
+      <circle cx="80" cy="40" r="5" fill="#c9a84c"/>
+      <circle cx="68" cy="46" r="3" fill="#c9a84c"/>
+      <circle cx="92" cy="46" r="3" fill="#c9a84c"/>
+      <!-- Lotus on crown -->
+      <ellipse cx="80" cy="38" rx="8" ry="4" fill="rgba(228,160,180,0.9)"/>
+      <!-- Face — serene -->
+      <ellipse cx="75" cy="69" rx="2" ry="2.5" fill="#8b7355"/>
+      <ellipse cx="85" cy="69" rx="2" ry="2.5" fill="#8b7355"/>
+      <path d="M77 76 Q80 79 83 76" stroke="#8b7355" stroke-width="1.2" fill="none"/>
+      <!-- Lotus vase in hand -->
+      <ellipse cx="108" cy="120" rx="7" ry="9" fill="rgba(201,168,76,0.7)"/>
+      <path d="M101 112 Q108 105 115 112" stroke="rgba(228,160,180,0.9)" stroke-width="2" fill="rgba(228,160,180,0.4)"/>
+      <!-- Lotus petals at base -->
+      <ellipse cx="80" cy="215" rx="38" ry="9" fill="rgba(228,160,180,0.5)"/>
+      <path d="M45 212 Q65 198 80 208 Q95 198 115 212" stroke="rgba(228,160,180,0.8)" stroke-width="2.5" fill="none"/>
+    </svg>`
+  },
+  dibo: {
+    bg: 'radial-gradient(ellipse at 50% 30%, #1a0a2a 0%, #0a0514 40%, #0d0503 100%)',
+    sub: 'CỨU ĐỘ CHÚNG SINH · ĐẠI NGUYỆN',
+    altarName: 'Địa Tạng Vương Bồ Tát',
+    svg: `<svg viewBox="0 0 160 230" width="120" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="dg1" cx="50%" cy="40%" r="55%"><stop offset="0%" stop-color="#2a1a3a"/><stop offset="60%" stop-color="#1a0a28"/><stop offset="100%" stop-color="#0d0514"/></radialGradient>
+        <radialGradient id="dg2" cx="50%" cy="50%" r="50%"><stop offset="0%" stop-color="#8b6aa8"/><stop offset="100%" stop-color="#4a2a6a"/></radialGradient>
+      </defs>
+      <!-- Dark aura rings -->
+      <circle cx="80" cy="80" r="58" fill="none" stroke="rgba(138,100,168,0.15)" stroke-width="2"/>
+      <circle cx="80" cy="80" r="50" fill="rgba(138,100,168,0.06)"/>
+      <!-- Halo — golden -->
+      <circle cx="80" cy="54" r="26" fill="none" stroke="rgba(201,168,76,0.5)" stroke-width="1.5"/>
+      <circle cx="80" cy="54" r="20" fill="rgba(201,168,76,0.1)"/>
+      <!-- Dark robe -->
+      <path d="M36 132 Q32 175 30 222 L130 222 Q128 175 124 132 Q102 118 80 120 Q58 118 36 132Z" fill="url(#dg1)" opacity="0.95"/>
+      <!-- Gold trim on robe -->
+      <path d="M60 122 Q80 130 100 122 L102 135 Q80 143 58 135Z" fill="rgba(201,168,76,0.4)"/>
+      <!-- Body -->
+      <ellipse cx="80" cy="112" rx="25" ry="28" fill="url(#dg2)" opacity="0.8"/>
+      <!-- Kasaya (monk robe detail) -->
+      <path d="M56 100 Q80 108 104 100" stroke="rgba(201,168,76,0.6)" stroke-width="2" fill="none"/>
+      <!-- Neck + head -->
+      <rect x="74" y="83" width="12" height="14" rx="6" fill="#c8a878"/>
+      <ellipse cx="80" cy="68" rx="21" ry="23" fill="#c8a878"/>
+      <!-- Monk head — shaved -->
+      <ellipse cx="80" cy="58" rx="19" ry="14" fill="#b89868"/>
+      <!-- Ushnisha bumps (monk) -->
+      <circle cx="72" cy="57" r="2.5" fill="#a88858"/>
+      <circle cx="80" cy="55" r="2.5" fill="#a88858"/>
+      <circle cx="88" cy="57" r="2.5" fill="#a88858"/>
+      <!-- Face — solemn -->
+      <ellipse cx="74" cy="68" rx="2.2" ry="2.8" fill="#5a3a1a"/>
+      <ellipse cx="86" cy="68" rx="2.2" ry="2.8" fill="#5a3a1a"/>
+      <path d="M76 76 Q80 78 84 76" stroke="#5a3a1a" stroke-width="1.3" fill="none"/>
+      <!-- Khakkhara (staff) -->
+      <line x1="110" y1="50" x2="110" y2="210" stroke="rgba(201,168,76,0.8)" stroke-width="3"/>
+      <circle cx="110" cy="50" r="8" fill="none" stroke="rgba(201,168,76,0.8)" stroke-width="2"/>
+      <circle cx="110" cy="50" r="4" fill="rgba(201,168,76,0.6)"/>
+      <!-- Wish-granting jewel (cintamani) -->
+      <circle cx="58" cy="125" r="8" fill="rgba(100,180,220,0.7)"/>
+      <circle cx="58" cy="125" r="5" fill="rgba(150,220,255,0.8)"/>
+      <circle cx="56" cy="123" r="2" fill="rgba(255,255,255,0.8)"/>
+      <!-- Flame glow at jewel -->
+      <circle cx="58" cy="125" r="10" fill="none" stroke="rgba(100,180,220,0.3)" stroke-width="3"/>
+      <!-- Lotus base -->
+      <ellipse cx="80" cy="216" rx="36" ry="8" fill="rgba(138,100,168,0.4)"/>
+    </svg>`
+  },
+  thenong: {
+    bg: 'radial-gradient(ellipse at 50% 30%, #0a2a0a 0%, #051505 40%, #0d0503 100%)',
+    sub: 'THẦN NÔNG · VUA LÚA · VIỆT NAM',
+    altarName: 'Thần Nông',
+    svg: `<svg viewBox="0 0 160 220" width="120" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="ng1" cx="50%" cy="40%" r="50%"><stop offset="0%" stop-color="#4a7a2a"/><stop offset="100%" stop-color="#1a4a0a"/></radialGradient>
+      </defs>
+      <!-- Leaves background -->
+      <ellipse cx="40" cy="60" rx="20" ry="35" fill="rgba(80,140,40,0.3)" transform="rotate(-30 40 60)"/>
+      <ellipse cx="120" cy="70" rx="18" ry="30" fill="rgba(80,140,40,0.3)" transform="rotate(25 120 70)"/>
+      <!-- Robe — earth green/brown -->
+      <path d="M36 128 Q30 175 28 218 L132 218 Q130 175 124 128 Q102 114 80 116 Q58 114 36 128Z" fill="#3a5a1a" opacity="0.95"/>
+      <path d="M50 120 Q80 132 110 120" stroke="#c9a84c" stroke-width="2" fill="none"/>
+      <ellipse cx="80" cy="108" rx="26" ry="28" fill="url(#ng1)"/>
+      <rect x="74" y="83" width="12" height="14" rx="6" fill="#d4a060"/>
+      <ellipse cx="80" cy="68" rx="21" ry="23" fill="#d4a060"/>
+      <!-- Farmer hat -->
+      <ellipse cx="80" cy="48" rx="32" ry="8" fill="#8b6914"/>
+      <ellipse cx="80" cy="46" rx="20" ry="12" fill="#a07820"/>
+      <ellipse cx="80" cy="42" rx="10" ry="6" fill="#8b6914"/>
+      <!-- Face -->
+      <ellipse cx="75" cy="68" rx="2.2" ry="2.8" fill="#4a2a0a"/>
+      <ellipse cx="85" cy="68" rx="2.2" ry="2.8" fill="#4a2a0a"/>
+      <path d="M75 75 Q80 79 85 75" stroke="#4a2a0a" stroke-width="1.5" fill="none"/>
+      <!-- Rice stalks in hand -->
+      <line x1="50" y1="90" x2="45" y2="50" stroke="#c9a84c" stroke-width="2"/>
+      <ellipse cx="43" cy="47" rx="5" ry="8" fill="rgba(201,168,76,0.8)"/>
+      <ellipse cx="47" cy="44" rx="4" ry="6" fill="rgba(201,168,76,0.7)"/>
+      <!-- Plow/tool -->
+      <line x1="108" y1="100" x2="115" y2="200" stroke="#8b6914" stroke-width="4"/>
+      <path d="M108 195 Q115 200 122 195" stroke="#8b6914" stroke-width="3" fill="none"/>
+      <!-- Ground -->
+      <ellipse cx="80" cy="212" rx="38" ry="8" fill="rgba(80,50,20,0.5)"/>
+    </svg>`
+  },
+  thanhmau: {
+    bg: 'radial-gradient(ellipse at 50% 30%, #2a0a15 0%, #150510 40%, #0d0503 100%)',
+    sub: 'TỨ BẤT TỬ · MẪU ĐỆ TAM · LIỄU HẠNH',
+    altarName: 'Thánh Mẫu Liễu Hạnh',
+    svg: `<svg viewBox="0 0 160 230" width="120" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="mg1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#d4405a"/><stop offset="100%" stop-color="#8b1a3a"/></linearGradient>
+        <radialGradient id="mg2" cx="50%" cy="40%" r="50%"><stop offset="0%" stop-color="#f5c0c8"/><stop offset="100%" stop-color="#d4a0b0"/></radialGradient>
+      </defs>
+      <!-- Celestial aura -->
+      <circle cx="80" cy="70" r="60" fill="none" stroke="rgba(212,64,90,0.12)" stroke-width="3"/>
+      <!-- Phoenix feathers -->
+      <path d="M20 80 Q35 55 55 70" stroke="rgba(212,64,90,0.5)" stroke-width="2" fill="none"/>
+      <path d="M140 80 Q125 55 105 70" stroke="rgba(212,64,90,0.5)" stroke-width="2" fill="none"/>
+      <path d="M15 100 Q30 75 50 85" stroke="rgba(201,168,76,0.4)" stroke-width="1.5" fill="none"/>
+      <path d="M145 100 Q130 75 110 85" stroke="rgba(201,168,76,0.4)" stroke-width="1.5" fill="none"/>
+      <!-- Flowing red robe -->
+      <path d="M32 128 Q22 175 20 225 L140 225 Q138 175 128 128 Q104 110 80 112 Q56 110 32 128Z" fill="url(#mg1)" opacity="0.9"/>
+      <path d="M48 120 Q80 134 112 120" stroke="rgba(240,208,128,0.9)" stroke-width="2.5" fill="none"/>
+      <!-- Gold sash -->
+      <path d="M55 130 Q80 138 105 130 L110 145 Q80 153 50 145Z" fill="rgba(201,168,76,0.5)"/>
+      <!-- Body -->
+      <ellipse cx="80" cy="110" rx="27" ry="28" fill="url(#mg2)"/>
+      <!-- Neck -->
+      <rect x="74" y="84" width="12" height="14" rx="6" fill="#f0c8c0"/>
+      <!-- Head -->
+      <ellipse cx="80" cy="69" rx="20" ry="22" fill="#f0c8c0"/>
+      <!-- Elaborate headdress -->
+      <rect x="60" y="46" width="40" height="16" rx="4" fill="#8b1a3a"/>
+      <rect x="65" y="40" width="30" height="10" rx="3" fill="#c9a84c"/>
+      <rect x="70" y="34" width="20" height="9" rx="3" fill="#8b1a3a"/>
+      <path d="M70 34 Q80 26 90 34" fill="rgba(212,64,90,0.8)"/>
+      <circle cx="80" cy="30" r="5" fill="#c9a84c"/>
+      <circle cx="68" cy="36" r="3" fill="#c9a84c"/>
+      <circle cx="92" cy="36" r="3" fill="#c9a84c"/>
+      <!-- Hairpin decorations -->
+      <line x1="62" y1="46" x2="55" y2="35" stroke="#c9a84c" stroke-width="1.5"/>
+      <circle cx="54" cy="33" r="3" fill="rgba(212,64,90,0.9)"/>
+      <line x1="98" y1="46" x2="105" y2="35" stroke="#c9a84c" stroke-width="1.5"/>
+      <circle cx="106" cy="33" r="3" fill="rgba(212,64,90,0.9)"/>
+      <!-- Face — beautiful -->
+      <ellipse cx="75" cy="69" rx="2" ry="2.5" fill="#6b3a3a"/>
+      <ellipse cx="85" cy="69" rx="2" ry="2.5" fill="#6b3a3a"/>
+      <path d="M74 66 Q75 64 76 66" stroke="#6b3a3a" stroke-width="1" fill="none"/>
+      <path d="M84 66 Q85 64 86 66" stroke="#6b3a3a" stroke-width="1" fill="none"/>
+      <path d="M76 76 Q80 80 84 76" stroke="#d45a6a" stroke-width="1.5" fill="none"/>
+      <!-- Fan in hand -->
+      <path d="M106 108 Q118 95 122 110 Q116 118 106 115Z" fill="rgba(201,168,76,0.7)"/>
+      <line x1="106" y1="115" x2="108" y2="140" stroke="#8b6914" stroke-width="2"/>
+      <!-- Clouds at feet -->
+      <ellipse cx="80" cy="218" rx="40" ry="8" fill="rgba(255,255,255,0.15)"/>
+      <ellipse cx="60" cy="215" rx="20" ry="6" fill="rgba(255,255,255,0.1)"/>
+      <ellipse cx="100" cy="215" rx="20" ry="6" fill="rgba(255,255,255,0.1)"/>
+    </svg>`
+  },
+  tranbung: {
+    bg: 'radial-gradient(ellipse at 50% 30%, #1a1a0a 0%, #0a0a00 40%, #0d0503 100%)',
+    sub: 'TỨ BẤT TỬ · PHÙ ĐỔNG THIÊN VƯƠNG',
+    altarName: 'Thánh Gióng — Phù Đổng Thiên Vương',
+    svg: `<svg viewBox="0 0 160 230" width="120" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="gg1" cx="50%" cy="40%" r="50%"><stop offset="0%" stop-color="#c8a840"/><stop offset="100%" stop-color="#8b7010"/></radialGradient>
+      </defs>
+      <!-- Armor glow -->
+      <ellipse cx="80" cy="100" rx="50" ry="60" fill="rgba(201,168,76,0.08)"/>
+      <!-- Golden armor -->
+      <path d="M38 128 Q34 175 32 218 L128 218 Q126 175 122 128 Q100 110 80 112 Q60 110 38 128Z" fill="#8b7010" opacity="0.95"/>
+      <!-- Chest plate -->
+      <path d="M55 112 Q80 124 105 112 L108 145 Q80 152 52 145Z" fill="url(#gg1)"/>
+      <!-- Shoulder guards -->
+      <ellipse cx="48" cy="118" rx="16" ry="10" fill="#c9a84c" transform="rotate(-20 48 118)"/>
+      <ellipse cx="112" cy="118" rx="16" ry="10" fill="#c9a84c" transform="rotate(20 112 118)"/>
+      <!-- Body -->
+      <ellipse cx="80" cy="108" rx="28" ry="30" fill="#8b7010"/>
+      <!-- Neck + head -->
+      <rect x="74" y="82" width="12" height="16" rx="6" fill="#d4a060"/>
+      <ellipse cx="80" cy="66" rx="22" ry="24" fill="#d4a060"/>
+      <!-- Warrior helmet -->
+      <ellipse cx="80" cy="50" rx="24" ry="14" fill="#c9a84c"/>
+      <rect x="62" y="44" width="36" height="16" rx="2" fill="#c9a84c"/>
+      <path d="M62 44 L56 36 L104 36 L98 44Z" fill="#8b7010"/>
+      <rect x="70" y="30" width="20" height="8" rx="1" fill="#c9a84c"/>
+      <!-- Helmet crest -->
+      <path d="M75 30 Q80 18 85 30" fill="rgba(212,64,64,0.9)"/>
+      <!-- Face — fierce -->
+      <ellipse cx="75" cy="65" rx="2.5" ry="3" fill="#3a1a0a"/>
+      <ellipse cx="85" cy="65" rx="2.5" ry="3" fill="#3a1a0a"/>
+      <path d="M74 63 Q75 60 76 63" stroke="#3a1a0a" stroke-width="1.2" fill="none"/>
+      <path d="M84 63 Q85 60 86 63" stroke="#3a1a0a" stroke-width="1.2" fill="none"/>
+      <path d="M76 73 Q80 71 84 73" stroke="#3a1a0a" stroke-width="1.5" fill="none"/>
+      <!-- Iron horse suggestion -->
+      <path d="M22 180 Q40 165 55 175 Q50 195 35 200Z" fill="rgba(80,60,20,0.6)"/>
+      <!-- Spear/weapon -->
+      <line x1="115" y1="35" x2="108" y2="220" stroke="#c9a84c" stroke-width="3"/>
+      <path d="M110 35 L115 20 L120 35Z" fill="#c9a84c"/>
+      <!-- Ground dust -->
+      <ellipse cx="80" cy="212" rx="38" ry="7" fill="rgba(140,100,40,0.4)"/>
+    </svg>`
+  },
+  shiva: {
+    bg: 'radial-gradient(ellipse at 50% 30%, #1a0a2a 0%, #0a0518 40%, #0d0503 100%)',
+    sub: 'HINDU GIÁO · HỦY DIỆT & TÁI SINH',
+    altarName: 'Shiva — Thần Hủy Diệt & Tái Sinh',
+    svg: `<svg viewBox="0 0 160 240" width="120" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="sg1" cx="50%" cy="40%" r="50%"><stop offset="0%" stop-color="#9090e0"/><stop offset="100%" stop-color="#4040a0"/></radialGradient>
+      </defs>
+      <!-- Cosmic ring of fire (Nataraja style) -->
+      <circle cx="80" cy="85" r="62" fill="none" stroke="rgba(255,140,0,0.3)" stroke-width="4"/>
+      <circle cx="80" cy="85" r="56" fill="none" stroke="rgba(255,100,0,0.2)" stroke-width="3"/>
+      <!-- Multiple arms suggestion -->
+      <line x1="30" y1="65" x2="60" y2="95" stroke="rgba(144,144,224,0.6)" stroke-width="6" stroke-linecap="round"/>
+      <line x1="130" y1="65" x2="100" y2="95" stroke="rgba(144,144,224,0.6)" stroke-width="6" stroke-linecap="round"/>
+      <line x1="25" y1="95" x2="58" y2="110" stroke="rgba(144,144,224,0.5)" stroke-width="5" stroke-linecap="round"/>
+      <line x1="135" y1="95" x2="102" y2="110" stroke="rgba(144,144,224,0.5)" stroke-width="5" stroke-linecap="round"/>
+      <!-- Robe -->
+      <path d="M40 132 Q35 178 33 222 L127 222 Q125 178 120 132 Q100 115 80 117 Q60 115 40 132Z" fill="#2a2a6a" opacity="0.9"/>
+      <path d="M52 122 Q80 134 108 122" stroke="#c9a84c" stroke-width="2" fill="none"/>
+      <!-- Body (blue-skinned) -->
+      <ellipse cx="80" cy="110" rx="26" ry="28" fill="url(#sg1)"/>
+      <!-- Neck -->
+      <rect x="74" y="83" width="12" height="14" rx="6" fill="#7070c8"/>
+      <!-- Head -->
+      <ellipse cx="80" cy="68" rx="21" ry="23" fill="#7070c8"/>
+      <!-- Jata (matted hair up) -->
+      <path d="M60 56 Q65 38 80 36 Q95 38 100 56" fill="#4a3a2a"/>
+      <path d="M65 52 Q70 35 80 32 Q90 35 95 52" fill="#5a4a3a"/>
+      <!-- Crescent moon on head -->
+      <path d="M75 38 Q80 30 85 38 Q82 42 78 42 Q75 42 75 38Z" fill="rgba(240,240,255,0.9)"/>
+      <!-- Third eye (Shiva) -->
+      <ellipse cx="80" cy="63" rx="3.5" ry="2" fill="rgba(255,100,0,0.9)"/>
+      <ellipse cx="80" cy="63" rx="2" ry="1.2" fill="rgba(255,200,100,1)"/>
+      <!-- Eyes -->
+      <ellipse cx="75" cy="68" rx="2.2" ry="2.8" fill="#2a1a0a"/>
+      <ellipse cx="85" cy="68" rx="2.2" ry="2.8" fill="#2a1a0a"/>
+      <!-- Trident (trishul) in upper right hand -->
+      <line x1="118" y1="30" x2="118" y2="160" stroke="#c9a84c" stroke-width="2.5"/>
+      <line x1="113" y1="35" x2="113" y2="50" stroke="#c9a84c" stroke-width="2"/>
+      <line x1="123" y1="35" x2="123" y2="50" stroke="#c9a84c" stroke-width="2"/>
+      <!-- Drum (damaru) upper left -->
+      <path d="M35 50 L45 58 L35 66 L45 74 L35 82" stroke="#8b6914" stroke-width="3" fill="none" stroke-linejoin="round"/>
+      <!-- Snake coil at neck -->
+      <path d="M62 85 Q80 78 98 85" stroke="rgba(80,200,80,0.7)" stroke-width="3" fill="none"/>
+      <!-- Lotus base -->
+      <ellipse cx="80" cy="216" rx="36" ry="8" fill="rgba(100,80,200,0.3)"/>
+    </svg>`
+  },
+  guan: {
+    bg: 'radial-gradient(ellipse at 50% 30%, #1a0a00 0%, #0d0500 40%, #0d0503 100%)',
+    sub: 'ĐẠO GIÁO · TRUNG NGHĨA · VÕ THÁNH',
+    altarName: 'Quan Thánh Đế Quân — Quan Công',
+    svg: `<svg viewBox="0 0 160 230" width="120" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="qg1" cx="50%" cy="40%" r="50%"><stop offset="0%" stop-color="#1a4a1a"/><stop offset="100%" stop-color="#0a2a0a"/></radialGradient>
+      </defs>
+      <!-- Power aura -->
+      <ellipse cx="80" cy="90" rx="55" ry="65" fill="rgba(201,168,76,0.06)"/>
+      <!-- Green robe (Quan Cong's iconic green) -->
+      <path d="M34 130 Q28 178 26 222 L134 222 Q132 178 126 130 Q103 112 80 114 Q57 112 34 130Z" fill="#1a4a1a" opacity="0.95"/>
+      <!-- Gold armor overlay -->
+      <path d="M52 120 Q80 132 108 120 L112 148 Q80 155 48 148Z" fill="rgba(201,168,76,0.5)"/>
+      <!-- Body -->
+      <ellipse cx="80" cy="110" rx="28" ry="30" fill="url(#qg1)"/>
+      <!-- Neck + head (red-faced Guan Yu) -->
+      <rect x="74" y="82" width="12" height="16" rx="6" fill="#c04030"/>
+      <ellipse cx="80" cy="66" rx="22" ry="24" fill="#c04030"/>
+      <!-- Official hat (Guan mao) -->
+      <rect x="58" y="44" width="44" height="18" rx="4" fill="#1a1a1a"/>
+      <rect x="62" y="40" width="36" height="8" rx="2" fill="#2a2a2a"/>
+      <rect x="68" y="34" width="24" height="8" rx="2" fill="#1a1a1a"/>
+      <!-- Wing ears of hat -->
+      <rect x="42" y="46" width="16" height="8" rx="2" fill="#1a1a1a" transform="rotate(-10 42 46)"/>
+      <rect x="102" y="46" width="16" height="8" rx="2" fill="#1a1a1a" transform="rotate(10 110 46)"/>
+      <!-- Face — majestic, red -->
+      <path d="M72 65 Q75 62 78 65" stroke="#6a2020" stroke-width="1.5" fill="none"/>
+      <path d="M82 65 Q85 62 88 65" stroke="#6a2020" stroke-width="1.5" fill="none"/>
+      <ellipse cx="75" cy="68" rx="2.5" ry="3" fill="#3a1010"/>
+      <ellipse cx="85" cy="68" rx="2.5" ry="3" fill="#3a1010"/>
+      <path d="M76 76 Q80 79 84 76" stroke="#6a2020" stroke-width="1.5" fill="none"/>
+      <!-- Long beard (iconic) -->
+      <path d="M68 78 Q65 95 63 115 Q70 120 80 118 Q90 120 97 115 Q95 95 92 78" fill="rgba(20,10,0,0.8)"/>
+      <path d="M72 82 Q70 100 68 118" stroke="rgba(60,40,20,0.6)" stroke-width="1.5" fill="none"/>
+      <path d="M80 85 Q79 103 78 120" stroke="rgba(60,40,20,0.6)" stroke-width="1.5" fill="none"/>
+      <path d="M88 82 Q90 100 92 118" stroke="rgba(60,40,20,0.6)" stroke-width="1.5" fill="none"/>
+      <!-- Green Dragon Crescent Blade -->
+      <line x1="118" y1="40" x2="112" y2="215" stroke="#8b6914" stroke-width="3.5"/>
+      <path d="M112 50 Q130 60 128 80 Q125 90 112 85Z" fill="rgba(80,140,80,0.8)"/>
+      <path d="M112 85 Q128 80 126 95 Q122 105 112 100Z" fill="rgba(80,140,80,0.6)"/>
+      <!-- Ground -->
+      <ellipse cx="80" cy="216" rx="38" ry="8" fill="rgba(30,60,30,0.5)"/>
+    </svg>`
+  },
+  tao: {
+    bg: 'radial-gradient(ellipse at 50% 30%, #0a1a1a 0%, #050d0a 40%, #0d0503 100%)',
+    sub: 'ĐẠO GIÁO · VÔ VI · ĐẠO ĐỨC KINH',
+    altarName: 'Thái Thượng Lão Quân',
+    svg: `<svg viewBox="0 0 160 230" width="120" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="tg1" cx="50%" cy="40%" r="50%"><stop offset="0%" stop-color="#c8e8e8"/><stop offset="100%" stop-color="#a0c0c8"/></radialGradient>
+      </defs>
+      <!-- Yin-yang cosmic aura -->
+      <circle cx="80" cy="80" r="58" fill="none" stroke="rgba(200,220,220,0.2)" stroke-width="2"/>
+      <!-- Ethereal robe (white/blue for Taoist immortal) -->
+      <path d="M34 128 Q28 175 26 222 L134 222 Q132 175 126 128 Q103 112 80 114 Q57 112 34 128Z" fill="#d8f0f0" opacity="0.85"/>
+      <path d="M50 120 Q80 132 110 120" stroke="rgba(201,168,76,0.9)" stroke-width="2.5" fill="none"/>
+      <!-- Flowing sleeves -->
+      <path d="M34 128 Q18 135 15 155 Q22 160 36 150Z" fill="rgba(220,245,245,0.7)"/>
+      <path d="M126 128 Q142 135 145 155 Q138 160 124 150Z" fill="rgba(220,245,245,0.7)"/>
+      <!-- Body -->
+      <ellipse cx="80" cy="108" rx="26" ry="28" fill="url(#tg1)"/>
+      <!-- Neck + head (elderly, white-haired) -->
+      <rect x="74" y="82" width="12" height="14" rx="6" fill="#f0e8d8"/>
+      <ellipse cx="80" cy="67" rx="21" ry="23" fill="#f0e8d8"/>
+      <!-- Long white hair / Taoist bun -->
+      <path d="M59 62 Q55 45 60 35 Q70 25 80 28 Q90 25 100 35 Q105 45 101 62" fill="#f8f8f8"/>
+      <ellipse cx="80" cy="32" rx="12" ry="8" fill="#f0f0f0"/>
+      <!-- Taoist topknot with hairpin -->
+      <ellipse cx="80" cy="26" rx="8" ry="6" fill="#e8e8e0"/>
+      <line x1="72" y1="26" x2="88" y2="26" stroke="#c9a84c" stroke-width="2"/>
+      <circle cx="90" cy="26" r="3" fill="#c9a84c"/>
+      <!-- Face — wise elderly -->
+      <ellipse cx="75" cy="66" rx="2" ry="2.5" fill="#5a4a3a"/>
+      <ellipse cx="85" cy="66" rx="2" ry="2.5" fill="#5a4a3a"/>
+      <!-- Long white eyebrows -->
+      <path d="M71 61 Q75 59 79 61" stroke="#f8f8f8" stroke-width="2" fill="none"/>
+      <path d="M81 61 Q85 59 89 61" stroke="#f8f8f8" stroke-width="2" fill="none"/>
+      <!-- Long white beard -->
+      <path d="M68 80 Q65 100 63 125 Q70 130 80 128 Q90 130 97 125 Q95 100 92 80" fill="rgba(240,240,240,0.9)"/>
+      <!-- Fan (Taoist immortal fan) -->
+      <path d="M104 105 Q120 92 124 108 Q118 116 104 114Z" fill="rgba(201,168,76,0.6)"/>
+      <line x1="104" y1="114" x2="106" y2="145" stroke="#8b6914" stroke-width="2"/>
+      <!-- Taiji symbol floating -->
+      <circle cx="45" cy="65" r="12" fill="none" stroke="rgba(201,168,76,0.4)" stroke-width="1.5"/>
+      <path d="M45 53 Q51 59 45 65 Q39 71 45 77" stroke="rgba(201,168,76,0.4)" stroke-width="1.5" fill="none"/>
+      <!-- Immortal clouds at feet -->
+      <ellipse cx="80" cy="216" rx="40" ry="9" fill="rgba(220,245,245,0.3)"/>
+      <ellipse cx="55" cy="213" rx="22" ry="6" fill="rgba(220,245,245,0.2)"/>
+      <ellipse cx="105" cy="213" rx="22" ry="6" fill="rgba(220,245,245,0.2)"/>
+    </svg>`
+  }
+};
+function renderPrayers() {
+  const list = document.getElementById('prayer-list');
+  list.innerHTML = state.prayers.slice(0, 10).map(p => `
+    <div class="diary-entry">
+      <div class="diary-date">${p.time} · Dâng lên ${DEITY_NAMES[p.deity] || p.deity}</div>
+      <div class="diary-text">${p.text}</div>
+    </div>
+  `).join('');
+}
+
+// ============ HEXAGRAM ============
+function throwCoins() {
+  if (state.throwCount >= 6) return;
+  const coins = document.querySelectorAll('.coin');
+  const results = [];
+  coins.forEach((c, i) => {
+    c.classList.add('flipping');
+    setTimeout(() => {
+      const heads = Math.random() > 0.5;
+      c.className = 'coin ' + (heads ? 'heads' : 'tails');
+      c.textContent = heads ? '☯' : '○';
+      results.push(heads);
+    }, 300);
+    setTimeout(() => c.classList.remove('flipping'), 600);
+  });
+  setTimeout(() => {
+    const yang = results.filter(Boolean).length >= 2;
+    state.hexLines.push(yang);
+    state.throwCount++;
+    document.getElementById('throw-count').textContent = `Lần gieo: ${state.throwCount}/6`;
+    if (state.throwCount === 6) showHexagram();
+  }, 700);
+}
+
+function showHexagram() {
+  const hex = HEXAGRAMS[Math.floor(Math.random() * HEXAGRAMS.length)];
+  const linesDiv = document.getElementById('hex-lines');
+  linesDiv.innerHTML = state.hexLines.map(yang => `
+    <div class="hex-line ${yang ? 'yang' : 'yin'}">
+      ${yang 
+        ? '<div class="hex-seg" style="width:60px"></div>'
+        : '<div class="hex-seg" style="width:24px"></div><div style="width:8px"></div><div class="hex-seg" style="width:24px"></div>'
+      }
+    </div>
+  `).join('');
+  document.getElementById('hex-name').textContent = hex.name;
+  document.getElementById('hex-meaning').textContent = hex.meaning;
+  document.getElementById('hexagram-result').style.display = 'block';
+  document.getElementById('reset-hex').style.display = 'block';
+}
+
+function resetHexagram() {
+  state.hexLines = []; state.throwCount = 0;
+  document.getElementById('throw-count').textContent = 'Lần gieo: 0/6';
+  document.getElementById('hexagram-result').style.display = 'none';
+  document.getElementById('reset-hex').style.display = 'none';
+  document.querySelectorAll('.coin').forEach(c => { c.className = 'coin'; c.textContent = '🪙'; });
+}
+
+function flipCoin(idx) { throwCoins(); }
+
+// ============ TỬ VI ============
+function readTuVi() {
+  const name = document.getElementById('tuvi-name').value || 'Bạn';
+  const year = document.getElementById('tuvi-year').value;
+  const hour = document.getElementById('tuvi-hour').value;
+  const gender = document.querySelector('input[name="gender"]:checked')?.value || 'nu';
+  if (!year) { showToast('Hãy chọn năm sinh'); return; }
+  
+  const can = ['Giáp','Ất','Bính','Đinh','Mậu','Kỷ','Canh','Tân','Nhâm','Quý'];
+  const chi = ['Tý','Sửu','Dần','Mão','Thìn','Tị','Ngọ','Mùi','Thân','Dậu','Tuất','Hợi'];
+  const y = parseInt(year);
+  const canName = can[(y-4)%10], chiName = chi[(y-4)%12];
+  const data = TUVI_DATA[hour];
+  
+  const titles = {ty:'Tý',suu:'Sửu',dan:'Dần',mao:'Mão',thin:'Thìn',ti:'Tị',ngo:'Ngọ',mui:'Mùi',than:'Thân',dau:'Dậu',tuat:'Tuất',hoi:'Hợi'};
+  
+  document.getElementById('tuvi-result-title').textContent = `✨ ${name} — ${canName} ${chiName} — Giờ ${titles[hour]}`;
+  document.getElementById('tuvi-result-text').innerHTML = `
+    <strong style="color:var(--gold)">Mệnh ${data.menh}</strong><br><br>
+    ${data.desc}<br><br>
+    <strong style="color:var(--gold)">Năm ${y} này:</strong> Đây là năm ${canName} ${chiName}, mang năng lượng ${data.menh}. 
+    ${gender === 'nu' ? 'Người nữ mệnh này được phù trợ bởi các vị Thánh Mẫu, đặc biệt thuận trong các tháng cuối năm.' : 'Người nam mệnh này được Quan Thánh phù hộ, thích hợp để phát triển sự nghiệp và tình duyên trong nửa đầu năm.'}
+    <br><br><em style="color:rgba(201,168,76,0.6)">※ Đây là tham khảo tâm linh, hãy luôn tin vào bản thân mình.</em>
+  `;
+  document.getElementById('tuvi-result').classList.add('show');
+}
+
+// ============ XIN QUẺ ============
+function shakeQue() {
+  const tube = document.getElementById('que-tube');
+  tube.style.animation = 'shake 0.5s ease';
+  tube.style.setProperty('animation', 'none');
+  requestAnimationFrame(() => {
+    tube.style.animation = '';
+    tube.style.transform = 'rotate(20deg)';
+    setTimeout(() => { tube.style.transform = 'rotate(-15deg)'; }, 100);
+    setTimeout(() => { tube.style.transform = 'rotate(10deg)'; }, 200);
+    setTimeout(() => { tube.style.transform = 'rotate(0deg)'; }, 300);
+  });
+}
+
+function getQue() {
+  const q = document.getElementById('que-question').value.trim();
+  if (!q) { showToast('Hãy nhập câu hỏi trong lòng'); return; }
+  shakeQue();
+  setTimeout(() => {
+    const idx = Math.floor(Math.random() * QUE_DATA.length);
+    const que = QUE_DATA[idx];
+    document.getElementById('que-number').textContent = que.num;
+    document.getElementById('que-name').textContent = que.name;
+    document.getElementById('que-text').textContent = que.text;
+    document.getElementById('que-result').style.display = 'block';
+    showToast('🎋 Đã rút được quẻ!');
+  }, 600);
+}
+
+// ============ TAROT ============
+function shuffleCards() {
+  const shuffled = [...TAROT_CARDS].sort(() => Math.random() - 0.5);
+  state.tarotCards = shuffled.slice(0, 3);
+  state.revealedCards = [];
+  document.getElementById('card-reading').style.display = 'none';
+  document.querySelectorAll('.tarot-card').forEach(c => {
+    c.style.background = 'linear-gradient(135deg,rgba(139,26,47,0.5),rgba(107,58,42,0.5))';
+    c.style.borderColor = 'rgba(201,168,76,0.3)';
+    c.textContent = '🂠'; c.style.fontSize = '30px';
+  });
+}
+
+function revealCard(idx) {
+  if (!state.tarotCards) { shuffleCards(); return; }
+  if (state.revealedCards.includes(idx)) return;
+  state.revealedCards.push(idx);
+  const card = state.tarotCards[idx];
+  const el = document.getElementById('card-' + idx);
+  el.style.background = 'linear-gradient(135deg, rgba(201,168,76,0.2), rgba(139,26,47,0.2))';
+  el.style.borderColor = 'var(--gold)';
+  el.innerHTML = `<div style="font-size:28px;margin-bottom:4px;">${card.icon}</div><div style="font-size:8px;color:var(--gold);padding:0 4px;">${card.name}</div>`;
+  if (state.revealedCards.length === 3) {
+    const reading = `🌸 <strong>${state.tarotCards[0].name}</strong> (Quá khứ): ${state.tarotCards[0].meaning}<br><br>💫 <strong>${state.tarotCards[1].name}</strong> (Hiện tại): ${state.tarotCards[1].meaning}<br><br>✨ <strong>${state.tarotCards[2].name}</strong> (Tương lai): ${state.tarotCards[2].meaning}`;
+    document.getElementById('card-reading').innerHTML = reading;
+    document.getElementById('card-reading').style.display = 'block';
+  }
+}
+
+// ============ INDEXEDDB FOR PHOTOS ============
+let db = null;
+function initDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open('LoveShrine', 1);
+    req.onupgradeneeded = e => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains('photos')) {
+        d.createObjectStore('photos', { keyPath: 'id' });
+      }
+    };
+    req.onsuccess = e => { db = e.target.result; resolve(db); };
+    req.onerror = () => reject(req.error);
+  });
+}
+function dbSavePhoto(photo) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('photos', 'readwrite');
+    tx.objectStore('photos').put(photo);
+    tx.oncomplete = resolve; tx.onerror = reject;
+  });
+}
+function dbGetAllPhotos() {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('photos', 'readonly');
+    const req = tx.objectStore('photos').getAll();
+    req.onsuccess = () => resolve(req.result || []);
+    req.onerror = reject;
+  });
+}
+function dbDeletePhoto(id) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('photos', 'readwrite');
+    tx.objectStore('photos').delete(id);
+    tx.oncomplete = resolve; tx.onerror = reject;
+  });
+}
+
+// ============ MEMORIES ============
+function handlePhotoUpload(event) {
+  const files = Array.from(event.target.files);
+  let done = 0;
+  files.forEach(file => {
+    // Compress image before storing
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      img.onload = async () => {
+        const canvas = document.createElement('canvas');
+        const MAX = 800;
+        let w = img.width, h = img.height;
+        if (w > MAX || h > MAX) {
+          if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+          else { w = Math.round(w * MAX / h); h = MAX; }
+        }
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        const compressed = canvas.toDataURL('image/jpeg', 0.7);
+        const photo = { id: Date.now() + done, src: compressed, time: new Date().toLocaleDateString('vi-VN') };
+        try {
+          await dbSavePhoto(photo);
+          state.photos.push(photo);
+          done++;
+          renderPhotos();
+        } catch(err) {
+          showToast('⚠️ Không thể lưu ảnh: bộ nhớ đầy');
+        }
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+  showToast('📸 Đang lưu ảnh kỷ niệm...');
+}
+
+function renderPhotos() {
+  const grid = document.getElementById('photos-grid');
+  grid.innerHTML = state.photos.map((p, i) => `
+    <div class="photo-item" style="position:relative;">
+      <img src="${p.src}" alt="" onclick="openPhotoModal('${p.src}')">
+      <div class="photo-overlay">
+        <span onclick="openPhotoModal('${p.src}')" style="font-size:18px;cursor:pointer;">🔍</span>
+        <span onclick="deletePhoto(${p.id})" style="font-size:18px;cursor:pointer;margin-left:8px;">🗑</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function deletePhoto(id) {
+  await dbDeletePhoto(id);
+  state.photos = state.photos.filter(p => p.id !== id);
+  renderPhotos();
+  showToast('🗑 Đã xoá ảnh');
+}
+
+function openPhotoModal(src) {
+  document.getElementById('photo-modal-img').src = src;
+  document.getElementById('photo-modal').classList.add('show');
+}
+function closePhotoModal() {
+  document.getElementById('photo-modal').classList.remove('show');
+}
+
+// ============ DIARY ============
+let showingCompose = false;
+function toggleDiaryCompose() {
+  showingCompose = !showingCompose;
+  document.getElementById('diary-compose').classList.toggle('show', showingCompose);
+}
+
+function selectName(who) {
+  state.currentDiaryAuthor = who;
+  document.getElementById('name-me').classList.toggle('selected', who === 'me');
+  document.getElementById('name-him').classList.toggle('selected', who === 'him');
+}
+
+function saveDiaryEntry() {
+  const text = document.getElementById('diary-text-input').value.trim();
+  const customName = document.getElementById('diary-name-input').value.trim();
+  let author = customName || (state.currentDiaryAuthor === 'me' ? 'Mình 💕' : 'Anh ấy 💙');
+  if (!text) { showToast('Hãy viết gì đó vào nhật ký'); return; }
+  const entry = { text, author, time: new Date().toLocaleDateString('vi-VN'), id: Date.now() };
+  state.diaryEntries.unshift(entry);
+  localStorage.setItem('diary', JSON.stringify(state.diaryEntries.slice(0, 100)));
+  document.getElementById('diary-text-input').value = '';
+  document.getElementById('diary-name-input').value = '';
+  renderDiary();
+  showToast('💝 Đã lưu nhật ký!');
+  toggleDiaryCompose();
+}
+
+function renderDiary() {
+  const el = document.getElementById('diary-entries');
+  el.innerHTML = state.diaryEntries.map(e => `
+    <div class="diary-entry">
+      <div class="diary-date">${e.time}</div>
+      <div class="diary-author">✍ ${e.author}</div>
+      <div class="diary-text">${e.text}</div>
+    </div>
+  `).join('');
+}
+
+// ============ BUDDHA CHAT ============
+function switchEntity(btn, id) {
+  document.querySelectorAll('.entity-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  state.currentEntity = id;
+  state.chatHistory = [];
+  const e = ENTITIES[id];
+  document.getElementById('chat-avatar').textContent = e.avatar;
+  document.getElementById('chat-name').textContent = e.name;
+  document.getElementById('chat-sub').textContent = e.sub;
+  document.getElementById('chat-input').placeholder = 'Nói chuyện với ' + e.name + '...';
+  const msgs = document.getElementById('chat-messages');
+  msgs.innerHTML = `
+    <div class="msg bot">
+      <div class="msg-avatar">${e.avatar}</div>
+      <div class="msg-bubble">${e.greeting}</div>
+    </div>
+  `;
+  setTimeout(() => msgs.scrollTop = msgs.scrollHeight, 50);
+}
+
+function handleChatKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chat-input');
+  const text = input.value.trim();
+  if (!text) return;
+  
+  input.value = ''; input.style.height = 'auto';
+  document.getElementById('send-btn').disabled = true;
+  
+  const msgs = document.getElementById('chat-messages');
+  const entity = ENTITIES[state.currentEntity];
+  
+  // User message
+  msgs.innerHTML += `
+    <div class="msg user">
+      <div class="msg-avatar">🌸</div>
+      <div class="msg-bubble">${text}</div>
+    </div>
+  `;
+  
+  // Typing indicator
+  const typingId = 'typing-' + Date.now();
+  msgs.innerHTML += `
+    <div class="msg bot" id="${typingId}">
+      <div class="msg-avatar">${entity.avatar}</div>
+      <div class="msg-bubble">
+        <div class="typing-indicator">
+          <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+        </div>
+      </div>
+    </div>
+  `;
+  msgs.scrollTop = msgs.scrollHeight;
+  
+  state.chatHistory.push({ role: 'user', content: text });
+  
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 300,
+        system: entity.system,
+        messages: state.chatHistory.slice(-10)
+      })
+    });
+    const data = await res.json();
+    const reply = data.content?.[0]?.text || '🙏 Con hãy tĩnh tâm và hỏi lại.';
+    state.chatHistory.push({ role: 'assistant', content: reply });
+    
+    document.getElementById(typingId).remove();
+    msgs.innerHTML += `
+      <div class="msg bot">
+        <div class="msg-avatar">${entity.avatar}</div>
+        <div class="msg-bubble">${reply}</div>
+      </div>
+    `;
+  } catch (err) {
+    document.getElementById(typingId).remove();
+    msgs.innerHTML += `
+      <div class="msg bot">
+        <div class="msg-avatar">${entity.avatar}</div>
+        <div class="msg-bubble">🙏 Tâm tĩnh thì đạo sinh. Hãy thử lại sau một lúc nhé con.</div>
+      </div>
+    `;
+  }
+  
+  document.getElementById('send-btn').disabled = false;
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+// ============ DIV TABS ============
+function switchDivTab(btn, id) {
+  document.querySelectorAll('.div-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.div-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+
+// ============ TOAST ============
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ============ INIT ============
+createParticles();
+// Set initial altar display
+setTimeout(() => updateAltarDisplay('phat'), 100);
+updateDaysCounter();
+populateTuviYears();
+renderPrayers();
+renderDiary();
+shuffleCards();
+
+// Init IndexedDB then load photos
+initDB().then(async () => {
+  state.photos = await dbGetAllPhotos();
+  state.photos.sort((a, b) => b.id - a.id);
+  renderPhotos();
+}).catch(err => {
+  console.warn('IndexedDB not available, photos wont persist:', err);
+  renderPhotos();
+});
+
+renderWishes();
+
+// Daily quote
+const QUOTES = [
+  '"Tình yêu chân thật như ánh sáng của ngọn đèn — không tắt dù gió mạnh, chỉ cháy sáng hơn."',
+  '"Trong vô lượng kiếp gặp nhau, mỗi gặp gỡ đều là nhân duyên đã gieo từ trước."',
+  '"Hạnh phúc không nằm ở điều to lớn — mà ở nụ cười ban sáng và cái nắm tay buổi tối."',
+  '"Tình yêu không đòi hỏi sự hoàn hảo. Tình yêu chấp nhận nhau với tất cả những không hoàn hảo ấy."',
+  '"Hai tâm hồn tìm đến nhau giữa biển người — đó chính là phép màu của vũ trụ."',
+];
+const todayQuote = QUOTES[new Date().getDay() % QUOTES.length];
+document.getElementById('daily-quote').textContent = todayQuote;
+
+
+// ============ MIST OVERLAY ============
+const MIST_PHRASES = [
+  '✦ Tâm tịnh ✦', '🌸 Phúc lành đang đến 🌸',
+  '☯ Vạn sự như ý ☯', '🕯️ Ánh sáng từ bi 🕯️',
+  '🪷 Tình duyên bền vững 🪷', '✨ Trời đất chứng giám ✨'
+];
+function showMist(phrase) {
+  const overlay = document.getElementById('mist-overlay');
+  const textEl = document.getElementById('mist-text');
+  const particles = document.getElementById('mist-particles');
+  textEl.textContent = phrase || MIST_PHRASES[Math.floor(Math.random() * MIST_PHRASES.length)];
+  // Create mist particles
+  particles.innerHTML = '';
+  for (let i = 0; i < 18; i++) {
+    const p = document.createElement('div');
+    p.className = 'mist-p';
+    const size = 60 + Math.random() * 120;
+    p.style.cssText = `width:${size}px;height:${size}px;left:${Math.random()*100}%;top:${Math.random()*100}%;animation-duration:${2+Math.random()*3}s;animation-delay:${Math.random()*1.5}s;`;
+    particles.appendChild(p);
+  }
+  overlay.classList.add('show');
+  return new Promise(resolve => {
+    setTimeout(() => {
+      overlay.classList.remove('show');
+      setTimeout(resolve, 400);
+    }, 1500);
+  });
+}
+
+// ============ MINDFULNESS CHALLENGES ============
+const CHALLENGES = [
+  'Hôm nay hãy dành 5 phút khen ngợi một điều bạn yêu ở người ấy 💬',
+  'Gửi cho người ấy một bức ảnh hoặc meme khiến bạn nghĩ đến họ 📸',
+  'Cùng nhau nghe một bài nhạc và kể vì sao bài đó khiến bạn nhớ đến họ 🎵',
+  'Viết một điều bạn biết ơn về mối quan hệ này vào nhật ký hôm nay 📖',
+  'Gọi video hoặc nhắn tin "Hôm nay em/anh thế nào?" — và thực sự lắng nghe 🌿',
+  'Cùng nhau xem một video ngắn về chủ đề cả hai cùng thích 🎬',
+  'Hôm nay đặt điện thoại xuống và dành 10 phút chỉ nói chuyện thôi 🌙',
+  'Làm điều gì đó bất ngờ nhỏ cho người ấy — dù chỉ là một tin nhắn dễ thương 🌸',
+  'Chia sẻ với người ấy một kỷ niệm đẹp mà bạn vẫn còn nhớ mãi ✨',
+  'Hôm nay hãy thử một điều mới cùng nhau, dù chỉ là một công thức nấu ăn 🍜',
+];
+const SKINS = [
+  { id: 'default', icon: '🏮', label: 'Mặc Định', cost: 0 },
+  { id: 'zen', icon: '☸️', label: 'Zen', cost: 20 },
+  { id: 'lotus', icon: '🪷', label: 'Hoa Sen', cost: 40 },
+  { id: 'jade', icon: '🌿', label: 'Ngọc Bích', cost: 60 },
+  { id: 'moon', icon: '🌙', label: 'Trăng Rằm', cost: 80 },
+  { id: 'gold', icon: '✨', label: 'Vàng Ngọc', cost: 100 },
+];
+
+let meritPoints = parseInt(localStorage.getItem('merit') || '0');
+let activeSkin = localStorage.getItem('activeSkin') || 'default';
+let challengeDoneToday = localStorage.getItem('challengeDate') === new Date().toDateString();
+
+function initChallenge() {
+  const dayIdx = Math.floor(Date.now() / 86400000) % CHALLENGES.length;
+  document.getElementById('challenge-text').textContent = CHALLENGES[dayIdx];
+  document.getElementById('challenge-day-label').textContent =
+    'HÔM NAY · ' + new Date().toLocaleDateString('vi-VN', {weekday:'long'}).toUpperCase();
+  if (challengeDoneToday) {
+    document.getElementById('challenge-btn').textContent = '✅ Đã hoàn thành hôm nay!';
+    document.getElementById('challenge-btn').disabled = true;
+    document.getElementById('challenge-btn').style.opacity = '0.6';
+  }
+  updateMeritBar();
+  renderSkins();
+}
+
+function completeChallenge() {
+  if (challengeDoneToday) return;
+  challengeDoneToday = true;
+  meritPoints = Math.min(meritPoints + 10, 100);
+  localStorage.setItem('merit', meritPoints);
+  localStorage.setItem('challengeDate', new Date().toDateString());
+  document.getElementById('challenge-btn').textContent = '✅ Đã hoàn thành hôm nay!';
+  document.getElementById('challenge-btn').disabled = true;
+  document.getElementById('challenge-btn').style.opacity = '0.6';
+  updateMeritBar();
+  renderSkins();
+  showMist('✨ +10 Công Đức ✨');
+  showToast('🌟 +10 công đức! Tích lũy thêm để mở skin!');
+  // Notify partner
+  if (firebaseDb && state.currentUser && state.partnerId) {
+    firebaseDb.ref('notifications/' + state.partnerId).push({
+      from: state.currentUser.uid, fromName: state.userProfile?.name || 'Người ấy',
+      message: '🌿 Người ấy vừa hoàn thành thử thách chánh niệm hôm nay — hai bạn đang cùng nhau tích đức 🌸',
+      type: 'challenge', timestamp: Date.now(), read: false
+    });
+  }
+}
+
+function updateMeritBar() {
+  document.getElementById('merit-bar').style.width = meritPoints + '%';
+  document.getElementById('merit-label').textContent = meritPoints + ' / 100 công đức';
+}
+
+function renderSkins() {
+  const grid = document.getElementById('skin-grid');
+  grid.innerHTML = SKINS.map(s => `
+    <div class="skin-item ${meritPoints >= s.cost ? '' : 'locked'} ${activeSkin === s.id ? 'active' : ''}"
+         onclick="${meritPoints >= s.cost ? 'applySkin("'+s.id+'")' : 'showToast("Cần '+s.cost+' công đức để mở skin này")'}"
+    >
+      <div>${s.icon}</div>
+      <div class="skin-label">${s.label}</div>
+      ${meritPoints < s.cost ? '<div class="skin-lock">🔒'+s.cost+'</div>' : ''}
+    </div>
+  `).join('');
+}
+
+function applySkin(id) {
+  activeSkin = id;
+  localStorage.setItem('activeSkin', id);
+  renderSkins();
+  showToast('✨ Đã đổi skin: ' + (SKINS.find(s=>s.id===id)?.label || id));
+  showMist('✨ Skin mới đã được kích hoạt ✨');
+}
+
+// ============ TEA RITUAL ============
+let teaCooldown = false;
+async function offerTea() {
+  if (teaCooldown) { showToast('🍵 Đã dâng trà rồi — hãy đợi người ấy nhận nhé'); return; }
+  const cup = document.getElementById('tea-cup-svg');
+  cup.classList.add('offered');
+  teaCooldown = true;
+  document.getElementById('tea-status').textContent = '☕ Đang dâng trà...';
+  await showMist('🍵 Tách trà tịnh tâm đang được dâng...');
+  document.getElementById('tea-status').textContent = '✅ Đã dâng! Người ấy sẽ nhận được thông báo 🌸';
+  showToast('🍵 Đã dâng trà cho người ấy!');
+  // Firebase notification
+  if (firebaseDb && state.currentUser && state.partnerId) {
+    firebaseDb.ref('notifications/' + state.partnerId).push({
+      from: state.currentUser.uid, fromName: state.userProfile?.name || 'Người ấy',
+      message: '🍵 ' + (state.userProfile?.name || 'Người ấy') + ' vừa mời bạn một tách trà tịnh tâm. Hãy ngồi xuống, thở chậm, và cảm nhận sự quan tâm này 🌸',
+      type: 'tea', timestamp: Date.now(), read: false
+    });
+  }
+  setTimeout(() => {
+    teaCooldown = false;
+    cup.classList.remove('offered');
+    document.getElementById('tea-status').textContent = 'Nhấn vào tách trà để dâng 🙏';
+  }, 30000); // 30s cooldown
+}
+
+// ============ WISH WALL ============
+function toggleWishCompose() {
+  showingWishCompose = !showingWishCompose;
+  document.getElementById('wish-compose').classList.toggle('show', showingWishCompose);
+}
+
+function addWish() {
+  const text = document.getElementById('wish-text-input').value.trim();
+  const locked = document.getElementById('wish-lock').checked;
+  if (!text) { showToast('Hãy viết nguyện ước của bạn'); return; }
+  const wish = {
+    id: Date.now(), text, locked,
+    author: state.userProfile?.name || 'Mình',
+    time: new Date().toLocaleDateString('vi-VN')
+  };
+  wishes.unshift(wish);
+  localStorage.setItem('wishes', JSON.stringify(wishes.slice(0, 50)));
+  // Also save to Firebase if connected
+  if (firebaseDb && state.currentUser && state.partnerId) {
+    const coupleId = [state.currentUser.uid, state.partnerId].sort().join('_');
+    firebaseDb.ref('wishes/' + coupleId).push({ ...wish, uid: state.currentUser.uid });
+  }
+  document.getElementById('wish-text-input').value = '';
+  document.getElementById('wish-lock').checked = false;
+  renderWishes();
+  toggleWishCompose();
+  showMist('🌟 Nguyện ước đã được ghi vào vũ trụ ✨');
+  showToast('🌟 Nguyện ước đã được dán lên!');
+}
+
+function renderWishes() {
+  const wall = document.getElementById('wish-wall');
+  if (!wishes.length) {
+    wall.innerHTML = '<div style="text-align:center;color:rgba(201,168,76,0.3);font-size:13px;padding:16px 0;">Chưa có nguyện ước nào... hãy là người đầu tiên 🌸</div>';
+    return;
+  }
+  wall.innerHTML = wishes.map(w => `
+    <div class="wish-note">
+      <div class="wish-author">✨ ${w.author} · ${w.time} ${w.locked ? '🔒' : ''}</div>
+      <div class="wish-text ${w.locked && w.author !== (state.userProfile?.name || 'Mình') ? 'wish-locked' : ''}">${w.text}</div>
+    </div>
+  `).join('');
+}
+
+// Load partner wishes from Firebase
+function loadPartnerWishes() {
+  if (!firebaseDb || !state.currentUser || !state.partnerId) return;
+  const coupleId = [state.currentUser.uid, state.partnerId].sort().join('_');
+  firebaseDb.ref('wishes/' + coupleId).on('value', snap => {
+    const data = snap.val();
+    if (!data) return;
+    const fbWishes = Object.values(data).sort((a,b) => b.id - a.id);
+    // Merge with local, deduplicate by id
+    const ids = new Set(wishes.map(w => w.id));
+    fbWishes.forEach(w => { if (!ids.has(w.id)) { wishes.unshift(w); ids.add(w.id); } });
+    wishes.sort((a,b) => b.id - a.id);
+    renderWishes();
+  });
+}
+
+// ============ SYNC QUẺ ĐÔI (Couple Xăm) ============
+let mySyncReady = false;
+let syncTimeout = null;
+
+function syncShake() {
+  if (mySyncReady) return;
+  mySyncReady = true;
+  const btn = document.getElementById('sync-shake-btn');
+  const status = document.getElementById('sync-status');
+  btn.style.borderColor = 'var(--gold)';
+  btn.style.boxShadow = '0 0 20px rgba(201,168,76,0.5)';
+  status.textContent = '✅ Bạn đã sẵn sàng — đang chờ người ấy...';
+
+  // Save to Firebase
+  if (firebaseDb && state.currentUser && state.partnerId) {
+    const coupleId = [state.currentUser.uid, state.partnerId].sort().join('_');
+    firebaseDb.ref('syncque/' + coupleId + '/' + state.currentUser.uid).set({
+      ready: true, ts: Date.now()
+    });
+    // Listen for partner
+    firebaseDb.ref('syncque/' + coupleId).on('value', snap => {
+      const data = snap.val();
+      if (!data) return;
+      const uids = Object.keys(data);
+      if (uids.length >= 2 && uids.every(uid => data[uid].ready)) {
+        // Both ready!
+        btn.classList.add('both-ready');
+        status.textContent = '🎋 Cả hai đã sẵn sàng! Đang rút quẻ...';
+        setTimeout(async () => {
+          await showMist('🎋 Xăm Tình Duyên Đôi 🎋');
+          revealSyncQue();
+          // Reset
+          firebaseDb.ref('syncque/' + coupleId).remove();
+          mySyncReady = false;
+          btn.classList.remove('both-ready');
+          btn.style.borderColor = '';
+          btn.style.boxShadow = '';
+        }, 800);
+        firebaseDb.ref('syncque/' + coupleId).off();
+      }
+    });
+  } else {
+    // Offline demo — auto reveal after 2s
+    status.textContent = '✅ Chế độ demo — đang rút quẻ tình duyên...';
+    setTimeout(async () => {
+      await showMist('🎋 Xăm Tình Duyên 🎋');
+      revealSyncQue();
+      mySyncReady = false;
+      btn.style.borderColor = '';
+      btn.style.boxShadow = '';
+    }, 1500);
+  }
+  // Timeout fallback
+  syncTimeout = setTimeout(() => {
+    if (mySyncReady) {
+      mySyncReady = false;
+      status.textContent = '⏱ Hết thời gian — người ấy chưa sẵn sàng. Thử lại nhé!';
+      btn.style.borderColor = '';
+      btn.style.boxShadow = '';
+      if (firebaseDb && state.currentUser && state.partnerId) {
+        const coupleId = [state.currentUser.uid, state.partnerId].sort().join('_');
+        firebaseDb.ref('syncque/' + coupleId + '/' + state.currentUser.uid).remove();
+        firebaseDb.ref('syncque/' + coupleId).off();
+      }
+    }
+  }, 30000);
+}
+
+const COUPLE_QUES = [
+  { name: '🌸 Tình Duyên Bền Vững', text: 'Hai người này có duyên số sâu nặng từ nhiều kiếp trước. Tình yêu hiện tại được thiên định — hãy trân trọng và nuôi dưỡng nhau mỗi ngày.' },
+  { name: '✨ Hôn Nhân Mỹ Mãn', text: 'Quẻ đôi sáng rỡ! Đây là mối tình dẫn đến bến bờ hạnh phúc. Cả hai cần kiên nhẫn và thành thật với nhau để gặt hái trái ngọt.' },
+  { name: '🌙 Vượt Sóng Gió', text: 'Phía trước có thử thách, nhưng tình yêu của hai người đủ mạnh để vượt qua. Hãy nắm tay nhau thật chặt khi sóng gió ập đến.' },
+  { name: '🪷 Duyên Tiền Định', text: 'Đây không phải lần đầu hai tâm hồn này gặp nhau. Nhân duyên từ nhiều kiếp đã đưa hai người đến bên nhau — hãy sống trọn vẹn từng khoảnh khắc.' },
+  { name: '💫 Tương Hỗ Tương Sinh', text: 'Hai người bổ trợ cho nhau hoàn hảo — điểm mạnh của người này lấp đầy điểm yếu của người kia. Cùng nhau, các bạn làm nên điều phi thường.' },
+  { name: '🌺 Cần Thêm Thời Gian', text: 'Quẻ đôi khuyên cả hai hãy thong thả — đừng vội vàng. Tình yêu cần không gian để trưởng thành. Hãy tập kiên nhẫn với nhau.' },
+];
+
+function revealSyncQue() {
+  const que = COUPLE_QUES[Math.floor(Math.random() * COUPLE_QUES.length)];
+  document.getElementById('sync-que-name').textContent = que.name;
+  document.getElementById('sync-que-text').textContent = que.text;
+  document.getElementById('sync-que-result').style.display = 'block';
+  document.getElementById('sync-status').textContent = '🌸 Quẻ đôi đã hiện ra — đọc cùng nhau nhé!';
+}
+
+// ============ UNLINK COUPLE ============
+function showUnlinkSection() {
+  const section = document.getElementById('unlink-section');
+  if (state.partnerId) {
+    section.style.display = 'block';
+    document.getElementById('unlink-partner-name').textContent =
+      state.partnerProfile?.name || state.partnerId;
+  }
+}
+
+async function confirmUnlink() {
+  if (!confirm('Bạn chắc chắn muốn hủy liên kết? Cả hai sẽ phải liên kết lại bằng mã mới.')) return;
+  if (!firebaseDb || !state.currentUser) { showToast('Cần đăng nhập để thực hiện'); return; }
+  try {
+    const uid = state.currentUser.uid;
+    const partnerId = state.partnerId;
+    // Generate new codes for both
+    const myNewCode = generateCoupleCode();
+    const partnerNewCode = generateCoupleCode();
+    await firebaseDb.ref('users/' + uid).update({ partnerId: null, coupleCode: myNewCode });
+    await firebaseDb.ref('users/' + partnerId).update({ partnerId: null, coupleCode: partnerNewCode });
+    state.partnerId = null;
+    state.partnerProfile = null;
+    state.userProfile.coupleCode = myNewCode;
+    document.getElementById('user-bar-partner').textContent = 'Chưa liên kết';
+    document.getElementById('unlink-section').style.display = 'none';
+    showToast('💔 Đã hủy liên kết. Mã mới của bạn: ' + myNewCode);
+    // Notify partner
+    firebaseDb.ref('notifications/' + partnerId).push({
+      from: uid, fromName: state.userProfile?.name || 'Người ấy',
+      message: '💔 Người ấy đã hủy liên kết cặp đôi. Nếu đây là nhầm lẫn, hãy liên hệ để liên kết lại.',
+      type: 'unlink', timestamp: Date.now(), read: false
+    });
+  } catch(e) { showToast('Lỗi: ' + e.message); }
+}
+
+// ============ PATCH: linkPartner — enforce 1-1 exclusive ============
+async function linkPartnerExclusive() {
+  const code = document.getElementById('partner-code-input').value.trim().toUpperCase();
+  const statusEl = document.getElementById('couple-status');
+  if (code.length !== 6) { statusEl.textContent = 'Mã gồm 6 ký tự'; return; }
+  if (!firebaseDb || !state.currentUser) { statusEl.textContent = 'Cần đăng nhập trước'; return; }
+  statusEl.textContent = '⏳ Đang tìm người ấy...';
+  try {
+    const snap = await firebaseDb.ref('users').orderByChild('coupleCode').equalTo(code).once('value');
+    const users = snap.val();
+    if (!users) { statusEl.textContent = '❌ Không tìm thấy mã này'; return; }
+    const partnerUid = Object.keys(users)[0];
+    if (partnerUid === state.currentUser.uid) { statusEl.textContent = '😅 Đó là mã của chính bạn!'; return; }
+    // CHECK: partner already linked?
+    const partnerData = users[partnerUid];
+    if (partnerData.partnerId && partnerData.partnerId !== state.currentUser.uid) {
+      statusEl.textContent = '💔 Người này đã có cặp đôi rồi'; return;
+    }
+    // CHECK: I already linked to someone?
+    const mySnap = await firebaseDb.ref('users/' + state.currentUser.uid).once('value');
+    const myData = mySnap.val();
+    if (myData.partnerId && myData.partnerId !== partnerUid) {
+      statusEl.textContent = '💔 Bạn đang liên kết với người khác — hãy hủy liên kết trước';
+      return;
+    }
+    const uid = state.currentUser.uid;
+    await firebaseDb.ref('users/' + uid + '/partnerId').set(partnerUid);
+    await firebaseDb.ref('users/' + partnerUid + '/partnerId').set(uid);
+    state.partnerId = partnerUid;
+    const partnerName = partnerData.name || 'Người ấy';
+    statusEl.textContent = '💕 Đã liên kết với ' + partnerName + '!';
+    document.getElementById('user-bar-partner').textContent = '💕 ' + partnerName;
+    await loadPartnerProfile(partnerUid);
+    showUnlinkSection();
+    setTimeout(() => {
+      hideAuthModal();
+      showToast('💕 Đã kết nối với ' + partnerName + '!');
+    }, 1500);
+  } catch(e) { statusEl.textContent = 'Lỗi: ' + e.message; }
+}
+
+// ============ SHRINE MIST ON DEITY CATEGORY ============
+// Mist on deity selection is handled inside selectDeity() above
+
+// ============ INIT SANCTUARY ============
+function initSanctuary() {
+  initChallenge();
+  renderWishes();
+  if (state.partnerId) {
+    showUnlinkSection();
+    loadPartnerWishes();
+  }
+}
+
+// Sanctuary init on first visit is handled inside switchTab() above
+
+// ============ FIREBASE CONFIG ============
+// 🔧 SETUP: Replace this with your Firebase project config
+// Get it from: Firebase Console → Project Settings → Your Apps → SDK setup
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyB8OntSu-FEz7QlnFG4-SJOEfYcBib5Xys",
+  authDomain: "tamlinhtinhyeu-88d29.firebaseapp.com",
+  databaseURL: "https://tamlinhtinhyeu-88d29-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "tamlinhtinhyeu-88d29",
+  storageBucket: "tamlinhtinhyeu-88d29.firebasestorage.app",
+  messagingSenderId: "23652365149",
+  appId: "1:23652365149:web:fb8ca6be23f1c4b22b2eb4",
+  measurementId: "G-CGCP3KEP5L"
+};
+
+let firebaseApp = null;
+let firebaseAuth = null;
+let firebaseDb = null;
+
+function initFirebase() {
+  try {
+    if (!FIREBASE_CONFIG.apiKey || FIREBASE_CONFIG.apiKey === "YOUR_API_KEY") {
+      console.log('Firebase not configured yet — running in offline mode');
+      return false;
+    }
+    firebaseApp = firebase.initializeApp(FIREBASE_CONFIG);
+    firebaseAuth = firebase.auth();
+    firebaseDb = firebase.database();
+    window.firebaseDb = firebaseDb;
+    window.firebaseAuth = firebaseAuth;
+
+    firebaseAuth.onAuthStateChanged(user => {
+      if (user) {
+        state.currentUser = user;
+        loadUserProfile(user.uid);
+      } else {
+        state.currentUser = null;
+        showAuthModal();
+      }
+    });
+    return true;
+  } catch(e) {
+    console.warn('Firebase init failed:', e);
+    return false;
+  }
+}
+
+// ============ AUTH ============
+function showAuthModal() {
+  document.getElementById('auth-modal').classList.add('show');
+}
+function hideAuthModal() {
+  document.getElementById('auth-modal').classList.remove('show');
+}
+function skipAuth() {
+  hideAuthModal();
+  showUserBar();
+  const nameEl = document.getElementById('user-bar-name');
+  if (nameEl) nameEl.textContent = 'Khách 🌸';
+}
+function skipCouple() {
+  hideAuthModal();
+  showUserBar();
+}
+
+function switchAuthTab(tab) {
+  const isLogin = tab === 'login';
+  // Tab buttons
+  document.getElementById('tab-login-btn').style.background = isLogin ? 'rgba(201,168,76,0.2)' : 'transparent';
+  document.getElementById('tab-login-btn').style.color = isLogin ? 'var(--gold)' : 'rgba(201,168,76,0.5)';
+  document.getElementById('tab-register-btn').style.background = isLogin ? 'transparent' : 'rgba(201,168,76,0.2)';
+  document.getElementById('tab-register-btn').style.color = isLogin ? 'rgba(201,168,76,0.5)' : 'var(--gold)';
+  // Name field
+  document.getElementById('auth-name-wrap').style.display = isLogin ? 'none' : 'block';
+  if (isLogin) document.getElementById('auth-name').value = '';
+  // Submit button text
+  document.getElementById('auth-submit-btn').textContent = isLogin ? '🌸 Đăng Nhập' : '🌸 Tạo Tài Khoản';
+  // Clear error
+  document.getElementById('auth-error').textContent = '';
+}
+
+async function doAuth() {
+  const email = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const name = document.getElementById('auth-name').value.trim();
+  const errEl = document.getElementById('auth-error');
+  errEl.textContent = '';
+  if (!email || !password) { errEl.textContent = 'Vui lòng nhập email và mật khẩu'; return; }
+  if (password.length < 6) { errEl.textContent = 'Mật khẩu phải có ít nhất 6 ký tự'; return; }
+  if (!firebaseAuth) { errEl.textContent = 'Firebase chưa kết nối'; return; }
+
+  errEl.innerHTML = '<span style="color:rgba(201,168,76,0.6)">⏳ Đang xử lý...</span>';
+
+  // Check which tab is active
+  const isRegisterTab = document.getElementById('auth-name-wrap').style.display !== 'none';
+  if (isRegisterTab) {
+    // REGISTER
+    if (!name) { errEl.textContent = 'Hãy nhập tên của bạn để đăng ký'; return; }
+    try {
+      const cred = await firebaseAuth.createUserWithEmailAndPassword(email, password);
+      await cred.user.updateProfile({ displayName: name });
+      const code = generateCoupleCode();
+      await firebaseDb.ref('users/' + cred.user.uid).set({
+        name, email, coupleCode: code, createdAt: Date.now()
+      });
+      errEl.textContent = '';
+      goToCoupleStep(cred.user.uid);
+    } catch(e) {
+      const msgs = {
+        'auth/email-already-in-use': 'Email này đã có tài khoản — hãy xóa tên và đăng nhập',
+        'auth/invalid-email': 'Email không hợp lệ',
+        'auth/weak-password': 'Mật khẩu phải có ít nhất 6 ký tự',
+      };
+      errEl.textContent = msgs[e.code] || ('Lỗi đăng ký: ' + e.message);
+    }
+  } else {
+    // LOGIN
+    try {
+      const cred = await firebaseAuth.signInWithEmailAndPassword(email, password);
+      errEl.textContent = '';
+      goToCoupleStep(cred.user.uid);
+    } catch(e) {
+      const msgs = {
+        'auth/user-not-found': 'Chưa có tài khoản — hãy nhập tên để đăng ký mới',
+        'auth/wrong-password': 'Sai mật khẩu',
+        'auth/invalid-login-credentials': 'Sai email hoặc mật khẩu — hoặc chưa có tài khoản (nhập tên để đăng ký)',
+        'auth/invalid-credential': 'Sai email hoặc mật khẩu — hoặc chưa có tài khoản (nhập tên để đăng ký)',
+        'auth/invalid-email': 'Email không hợp lệ',
+        'auth/too-many-requests': 'Quá nhiều lần thử — thử lại sau ít phút',
+      };
+      errEl.textContent = msgs[e.code] || ('Lỗi đăng nhập: ' + e.message);
+    }
+  }
+}
+
+function goToCoupleStep(uid) {
+  document.getElementById('auth-step-login').style.display = 'none';
+  document.getElementById('auth-step-couple').style.display = 'block';
+  loadUserProfile(uid);
+}
+
+async function doGoogleAuth() {
+  const errEl = document.getElementById('auth-error');
+  if (!firebaseAuth) { errEl.textContent = 'Firebase chưa kết nối'; return; }
+  errEl.innerHTML = '<span style="color:rgba(201,168,76,0.6)">⏳ Đang mở Google...</span>';
+  try {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    const cred = await firebaseAuth.signInWithPopup(provider);
+    const user = cred.user;
+    // Check if profile exists, if not create it
+    const snap = await firebaseDb.ref('users/' + user.uid).once('value');
+    if (!snap.val()) {
+      const code = generateCoupleCode();
+      await firebaseDb.ref('users/' + user.uid).set({
+        name: user.displayName || 'Bạn',
+        email: user.email,
+        coupleCode: code,
+        createdAt: Date.now()
+      });
+    }
+    errEl.textContent = '';
+    goToCoupleStep(user.uid);
+  } catch(e) {
+    if (e.code === 'auth/popup-closed-by-user') {
+      errEl.textContent = '';
+    } else {
+      errEl.textContent = 'Lỗi Google: ' + e.message;
+    }
+  }
+}
+
+function generateCoupleCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return Array.from({length: 6}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+}
+
+async function loadUserProfile(uid) {
+  if (!firebaseDb) return;
+  const snap = await firebaseDb.ref('users/' + uid).once('value');
+  const profile = snap.val();
+  if (!profile) return;
+  state.userProfile = profile;
+  // Show code in couple step
+  document.getElementById('my-couple-code').textContent = profile.coupleCode || '------';
+  // Show user bar
+  showUserBar();
+  document.getElementById('user-bar-name').textContent = profile.name || 'Bạn';
+  // Load partner if already linked
+  if (profile.partnerId) {
+    state.partnerId = profile.partnerId;
+    loadPartnerProfile(profile.partnerId);
+  }
+  // Listen for notifications
+  listenForNotifications(uid);
+}
+
+async function linkPartner() {
+  const code = document.getElementById('partner-code-input').value.trim().toUpperCase();
+  const statusEl = document.getElementById('couple-status');
+  if (code.length !== 6) { statusEl.textContent = 'Mã gồm 6 ký tự'; return; }
+  if (!firebaseDb || !state.currentUser) { statusEl.textContent = 'Cần đăng nhập trước'; return; }
+  statusEl.textContent = '⏳ Đang tìm người ấy...';
+  try {
+    // Find user with this code
+    const snap = await firebaseDb.ref('users').orderByChild('coupleCode').equalTo(code).once('value');
+    const users = snap.val();
+    if (!users) { statusEl.textContent = '❌ Không tìm thấy mã này'; return; }
+    const partnerUid = Object.keys(users)[0];
+    if (partnerUid === state.currentUser.uid) { statusEl.textContent = '😅 Đó là mã của chính bạn!'; return; }
+    // Link both users
+    const uid = state.currentUser.uid;
+    await firebaseDb.ref('users/' + uid + '/partnerId').set(partnerUid);
+    await firebaseDb.ref('users/' + partnerUid + '/partnerId').set(uid);
+    state.partnerId = partnerUid;
+    const partnerName = users[partnerUid].name || 'Người ấy';
+    statusEl.textContent = '💕 Đã liên kết với ' + partnerName + '!';
+    document.getElementById('user-bar-partner').textContent = '💕 ' + partnerName;
+    await loadPartnerProfile(partnerUid);
+    setTimeout(() => {
+      hideAuthModal();
+      showToast('💕 Đã kết nối với ' + partnerName + '!');
+    }, 1500);
+  } catch(e) {
+    statusEl.textContent = 'Lỗi: ' + e.message;
+  }
+}
+
+async function loadPartnerProfile(partnerUid) {
+  if (!firebaseDb) return;
+  const snap = await firebaseDb.ref('users/' + partnerUid).once('value');
+  state.partnerProfile = snap.val();
+  const name = state.partnerProfile?.name || 'Người ấy';
+  document.getElementById('user-bar-partner').textContent = '💕 ' + name;
+}
+
+function copyCode() {
+  const code = document.getElementById('my-couple-code').textContent;
+  if (code === '------') return;
+  navigator.clipboard?.writeText(code).then(() => showToast('📋 Đã copy mã: ' + code));
+}
+
+function showUserBar() {
+  const bar = document.getElementById('user-bar');
+  if (bar) { bar.style.display = 'flex'; }
+  const app = document.getElementById('app');
+  if (app) app.style.paddingTop = '50px';
+}
+
+// ============ NOTIFICATIONS ============
+function listenForNotifications(uid) {
+  if (!firebaseDb) return;
+  firebaseDb.ref('notifications/' + uid).on('child_added', snap => {
+    const notif = snap.val();
+    if (!notif) return;
+    const key = snap.key;
+    state.notifications.unshift({ ...notif, key });
+    if (!notif.read) {
+      state.unreadCount++;
+      updateNotifBadge();
+      // Show push notification if supported
+      if (Notification.permission === 'granted') {
+        try {
+          new Notification('💕 ' + (notif.fromName || 'Người ấy'), {
+            body: notif.message,
+            icon: 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌸</text></svg>'
+          });
+        } catch(e) {}
+      }
+    }
+    renderNotifications();
+  });
+}
+
+function updateNotifBadge() {
+  const badge = document.getElementById('notif-badge');
+  if (state.unreadCount > 0) {
+    badge.textContent = state.unreadCount;
+    badge.style.display = 'flex';
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function openNotifModal() {
+  document.getElementById('notif-modal').classList.add('show');
+  // Mark all as read
+  state.unreadCount = 0;
+  updateNotifBadge();
+  if (firebaseDb && state.currentUser) {
+    state.notifications.forEach(n => {
+      if (!n.read) firebaseDb.ref('notifications/' + state.currentUser.uid + '/' + n.key + '/read').set(true);
+    });
+  }
+}
+function closeNotifModal(e) {
+  if (e.target === document.getElementById('notif-modal')) {
+    document.getElementById('notif-modal').classList.remove('show');
+  }
+}
+function clearNotifs() {
+  state.notifications = [];
+  if (firebaseDb && state.currentUser) {
+    firebaseDb.ref('notifications/' + state.currentUser.uid).remove();
+  }
+  renderNotifications();
+}
+
+function renderNotifications() {
+  const list = document.getElementById('notif-list');
+  if (!state.notifications.length) {
+    list.innerHTML = '<div style="text-align:center;color:rgba(201,168,76,0.4);font-size:13px;padding:20px 0;">Chưa có thông điệp nào 🌸</div>';
+    return;
+  }
+  list.innerHTML = state.notifications.slice(0, 20).map(n => `
+    <div style="background:rgba(201,168,76,${n.read?'0.05':'0.1'});border:1px solid rgba(201,168,76,${n.read?'0.1':'0.25'});border-radius:12px;padding:12px;">
+      <div style="font-size:9px;color:rgba(201,168,76,0.5);margin-bottom:5px;letter-spacing:0.1em;">${n.fromName || 'Người ấy'} · ${new Date(n.timestamp).toLocaleDateString('vi-VN')}</div>
+      <div style="font-size:13px;color:rgba(240,208,128,0.9);line-height:1.6;">${n.message}</div>
+    </div>
+  `).join('');
+}
+
+// Push notification permission (web push)
+async function requestPushPermission() {
+  if ('Notification' in window && Notification.permission === 'default') {
+    try {
+      const perm = await Notification.requestPermission();
+      if (perm === 'granted') showToast('🔔 Đã bật thông báo!');
+    } catch(e) { /* not supported */ }
+  }
+}
+
+// ============ INIT FIREBASE ============
+const firebaseReady = initFirebase();
+
+// Always show auth modal on load — even in offline mode
+setTimeout(() => {
+  if (firebaseReady) return; // Firebase handles it via onAuthStateChanged
+  // Offline mode: show modal with demo option
+  const err = document.getElementById('auth-error');
+  if (err) err.innerHTML = '<span style="color:rgba(201,168,76,0.55);font-size:10px;">💡 Chưa có Firebase — nhấn "Dùng thử" để trải nghiệm ngay, hoặc setup Firebase để dùng đầy đủ</span>';
+  showAuthModal();
+}, 300);
+
+// Request push notification permission
+setTimeout(requestPushPermission, 3000);
+
+</script>
+</body>
+</html>
